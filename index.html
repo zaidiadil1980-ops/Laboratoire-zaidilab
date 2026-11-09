@@ -112,6 +112,13 @@ textarea.fi{resize:none;min-height:65px}
 .ic p,.ic a{font-size:11px;color:var(--muted);line-height:1.5;text-decoration:none;display:block}
 .ic a{color:var(--sky)}
 .nores{text-align:center;padding:24px;color:var(--muted);font-size:13px;background:var(--white)}
+.faq-item{border-bottom:1px solid var(--border);padding:11px 0}
+.faq-item:last-child{border-bottom:none}
+.faq-item summary{font-size:13px;font-weight:500;color:var(--navy);cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';font-size:16px;color:var(--sky);margin-left:8px}
+.faq-item[open] summary::after{content:'–'}
+.faq-item p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:7px}
 .empty{text-align:center;padding:26px;color:var(--muted);font-size:13px}
 .empty i{font-size:30px;display:block;margin-bottom:7px;color:var(--border)}
 </style>
@@ -242,6 +249,29 @@ textarea.fi{resize:none;min-height:65px}
   <button class="btn bn" onclick="window.location.href='tel:+212601501476'"><i class="ti ti-phone"></i>Appeler ZaidiLab</button>
   <button class="btn bwa" onclick="window.open('https://wa.me/212601501476','_blank')"><i class="ti ti-brand-whatsapp"></i>WhatsApp ZaidiLab</button>
   <button class="btn bsky" onclick="window.open('https://www.zaidilab.com','_blank')"><i class="ti ti-world"></i>www.zaidilab.com</button>
+  <p class="ptitle" style="margin-top:18px;font-size:14px">Questions fréquentes</p>
+  <div class="card" style="padding:4px 14px">
+    <details class="faq-item">
+      <summary>Comment reçoit-on ses résultats ?</summary>
+      <p>Vos résultats vous sont transmis par WhatsApp et par email. Vous pouvez aussi venir les retirer directement au laboratoire.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Le prélèvement à domicile a-t-il un coût supplémentaire ?</summary>
+      <p>Cela dépend de votre quartier à Tanger. Contactez-nous par téléphone ou WhatsApp pour connaître le tarif exact selon votre adresse.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Dois-je être à jeun pour mon analyse ?</summary>
+      <p>Pour la plupart des bilans sanguins (glycémie, bilan lipidique...), un jeûne de 8 à 12h est recommandé, sauf indication contraire de votre médecin. En cas de doute, demandez-nous lors de la prise de rendez-vous.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Proposez-vous un service d'urgence 24h/24 ?</summary>
+      <p>Non, ZaidiLab fonctionne selon ses horaires d'ouverture (Lun–Ven 7h30–21h, Sam–Dim 8h–18h). En dehors de ces horaires, votre demande sera traitée dès la réouverture.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Comment réserver un prélèvement à domicile ?</summary>
+      <p>Remplissez le formulaire dans l'onglet « Domicile » et envoyez votre demande : nous vous rappelons sous 30 minutes pendant nos horaires d'ouverture.</p>
+    </details>
+  </div>
   <p style="text-align:center;margin-top:12px"><a href="politique-confidentialite.html" style="font-size:11px;color:var(--muted);text-decoration:underline" target="_blank">Politique de confidentialité</a></p>
 </div>
 
