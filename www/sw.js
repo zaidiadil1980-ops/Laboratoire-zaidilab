@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zaidilab-v4';
+const CACHE_NAME = 'zaidilab-v5';
 const ASSETS = [
   './',
   './index.html',
