@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.zaidilab.app",
+      "sha256_cert_fingerprints": [
+        "40:76:4C:77:7F:6D:4E:61:25:41:40:9D:9B:D7:12:23:60:B7:62:02:75:7C:5E:EE:CB:60:F9:57:DD:9E:AE:9A"
+      ]
+    }
+  }
+]

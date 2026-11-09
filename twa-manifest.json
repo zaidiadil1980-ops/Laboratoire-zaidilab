@@ -1,0 +1,38 @@
+{
+  "packageId": "com.zaidilab.app",
+  "host": "app.zaidilab.com",
+  "name": "ZaidiLab",
+  "launcherName": "ZaidiLab",
+  "display": "standalone",
+  "themeColor": "#1a3a6b",
+  "navigationColor": "#1a3a6b",
+  "navigationColorDark": "#1a3a6b",
+  "navigationDividerColor": "#1a3a6b",
+  "navigationDividerColorDark": "#1a3a6b",
+  "backgroundColor": "#1a3a6b",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://app.zaidilab.com/icon-512.png",
+  "maskableIconUrl": "https://app.zaidilab.com/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "zaidilab-upload"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://app.zaidilab.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://app.zaidilab.com/",
+  "minSdkVersion": 21,
+  "orientation": "portrait"
+}
