@@ -173,6 +173,7 @@ textarea.fi{resize:none;min-height:65px}
       <option>11:00 – 13:00</option>
       <option>14:00 – 16:00</option>
       <option>16:00 – 18:00</option>
+      <option>18:00 – 20:00</option>
     </select>
 
     <!-- ANALYSES SELECTOR -->
@@ -233,9 +234,10 @@ textarea.fi{resize:none;min-height:65px}
   </div>
   <div class="igrid">
     <div class="ic"><i class="ti ti-map-pin"></i><h3>Adresse</h3><p>Avenue Moulay Ali Chrif N°278<br>Tanger, Maroc</p><a href="https://maps.google.com/?q=Avenue+Moulay+Ali+Chrif+N°278,+Tanger,+Maroc" target="_blank">Google Maps</a></div>
-    <div class="ic"><i class="ti ti-clock"></i><h3>Horaires</h3><p>7j/7 · 7h–20h</p><p>Domicile ≤ 12h</p></div>
+    <div class="ic"><i class="ti ti-clock"></i><h3>Horaires</h3><p>Lun–Ven 7h30–21h<br>Sam–Dim 8h–18h</p></div>
     <div class="ic"><i class="ti ti-phone"></i><h3>Téléphones</h3><a href="tel:+212601501476">+212 601 501 476</a><a href="tel:+212539959116">+212 539 959 116</a></div>
     <div class="ic"><i class="ti ti-world"></i><h3>Web</h3><a href="https://www.zaidilab.com" target="_blank">www.zaidilab.com</a><a href="mailto:zaidilabtanger@gmail.com" style="font-size:10px">Email</a></div>
+    <div class="ic"><i class="ti ti-stethoscope"></i><h3>Direction médicale</h3><p>Dr. Adil Zaidi<br>Médecin Biologiste</p></div>
   </div>
   <button class="btn bn" onclick="window.location.href='tel:+212601501476'"><i class="ti ti-phone"></i>Appeler ZaidiLab</button>
   <button class="btn bwa" onclick="window.open('https://wa.me/212601501476','_blank')"><i class="ti ti-brand-whatsapp"></i>WhatsApp ZaidiLab</button>
@@ -386,25 +388,31 @@ function getGPS(){
   );
 }
 
-// SUBMIT
-function submitForm(){
-  const n=document.getElementById('f-name').value.trim(),p=document.getElementById('f-phone').value.trim(),a=document.getElementById('f-address').value.trim(),d=document.getElementById('f-date').value;
-  if(!n||!p||!a||!d){document.getElementById('serr').style.display='block';setTimeout(()=>document.getElementById('serr').style.display='none',3000);return;}
-  document.getElementById('smsg').style.display='block';setTimeout(()=>document.getElementById('smsg').style.display='none',5000);
-}
-
-function sendWA(){
-  const n=document.getElementById('f-name').value||'(non renseigné)';
-  const p=document.getElementById('f-phone').value||'';
-  const a=document.getElementById('f-address').value||'';
+// Construit le message de demande à partir du formulaire
+function buildBookingMessage(){
+  const n=document.getElementById('f-name').value.trim()||'(non renseigné)';
+  const p=document.getElementById('f-phone').value.trim()||'';
+  const a=document.getElementById('f-address').value.trim()||'';
   const d=document.getElementById('f-date').value||'';
   const t=document.getElementById('f-time').value||'';
   const notes=document.getElementById('f-notes').value||'';
   const sel=[...selectedAnalyses];
   const gps=uLat?`\n📍 GPS : https://maps.google.com/?q=${uLat},${uLng} (±${uAcc}m)`:'';
   const analysesText=sel.length>0?'\n\n🔬 Analyses :\n'+sel.map(s=>'• '+s).join('\n'):'';
-  const msg=`Bonjour ZaidiLab 👋\n\nPrélèvement à domicile :\n👤 ${n}\n📞 ${p}\n🏠 ${a}\n📅 ${d}${t?' · '+t:''}${gps}${analysesText}${notes?'\n\n📝 '+notes:''}\n\nMerci !`;
-  window.open('https://wa.me/212601501476?text='+encodeURIComponent(msg),'_blank');
+  return `Bonjour ZaidiLab 👋\n\nPrélèvement à domicile :\n👤 ${n}\n📞 ${p}\n🏠 ${a}\n📅 ${d}${t?' · '+t:''}${gps}${analysesText}${notes?'\n\n📝 '+notes:''}\n\nMerci !`;
+}
+
+// SUBMIT — envoie réellement la demande via WhatsApp (seul canal garanti sans serveur).
+// Avant, ce bouton affichait juste "Demande reçue" sans rien envoyer : corrigé.
+function submitForm(){
+  const n=document.getElementById('f-name').value.trim(),p=document.getElementById('f-phone').value.trim(),a=document.getElementById('f-address').value.trim(),d=document.getElementById('f-date').value;
+  if(!n||!p||!a||!d){document.getElementById('serr').style.display='block';setTimeout(()=>document.getElementById('serr').style.display='none',3000);return;}
+  window.open('https://wa.me/212601501476?text='+encodeURIComponent(buildBookingMessage()),'_blank');
+  document.getElementById('smsg').style.display='block';setTimeout(()=>document.getElementById('smsg').style.display='none',5000);
+}
+
+function sendWA(){
+  window.open('https://wa.me/212601501476?text='+encodeURIComponent(buildBookingMessage()),'_blank');
 }
 
 function fmtD(d){if(!d)return '';const[y,m,day]=d.split('-');return `${day}/${m}/${y}`;}
