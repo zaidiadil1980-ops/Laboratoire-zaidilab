@@ -1,0 +1,37 @@
+{
+  "name": "ZaidiLab — Analyses Médicales Tanger",
+  "short_name": "ZaidiLab",
+  "description": "Centre d'Analyses Médicales à Tanger — Prélèvement à domicile, tarifs, localisation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06335f",
+  "theme_color": "#06335f",
+  "orientation": "portrait",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Demande à domicile",
+      "short_name": "Domicile",
+      "description": "Demander un prélèvement à domicile",
+      "url": "./",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    }
+  ]
+}
