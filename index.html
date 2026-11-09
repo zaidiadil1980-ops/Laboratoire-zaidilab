@@ -6,6 +6,10 @@
 <meta name="theme-color" content="#1a3a6b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ZaidiLab">
+<meta name="description" content="Centre d'Analyses Médicales à Tanger — Prélèvement à domicile 7j/7, tarifs, localisation.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>ZaidiLab — Analyses Médicales Tanger</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
@@ -403,6 +407,12 @@ function fmtD(d){if(!d)return '';const[y,m,day]=d.split('-');return `${day}/${m}
 
 renderAnalyses();
 renderList();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
