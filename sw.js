@@ -1,11 +1,12 @@
-const CACHE_NAME = 'zaidilab-v3';
+const CACHE_NAME = 'zaidilab-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './logo.png'
+  './logo.png',
+  './firebase-config.js'
 ];
 
 self.addEventListener('install', e => {

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ZaidiLab — Mode Préleveur</title>
+<link rel="icon" href="icon-192.png" type="image/png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body{background:#06335f;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:16px;padding:28px 22px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+h1{font-size:17px;color:#06335f;margin-bottom:4px;text-align:center}
+.sub{font-size:12px;color:#7a8699;text-align:center;margin-bottom:20px}
+input{width:100%;padding:12px;border:1.5px solid #d8dee8;border-radius:10px;font-size:16px;text-align:center;letter-spacing:4px;margin-bottom:12px}
+button{width:100%;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px}
+.b-primary{background:#06335f;color:#fff}
+.b-stop{background:#d33a3a;color:#fff}
+.b-primary:disabled{background:#aab7c7}
+.status{text-align:center;font-size:12.5px;color:#7a8699;margin:14px 0;line-height:1.5}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#aab7c7;margin-right:6px;vertical-align:middle}
+.dot.live{background:#2fb86e;animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,184,110,.5)}70%{box-shadow:0 0 0 8px rgba(47,184,110,0)}100%{box-shadow:0 0 0 0 rgba(47,184,110,0)}}
+.err{color:#d33a3a;font-size:12px;text-align:center;margin-top:8px;display:none}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🩺 ZaidiLab — Mode Préleveur</h1>
+  <p class="sub">Diffuse ta position pendant ta tournée</p>
+
+  <div id="pin-screen">
+    <input type="password" inputmode="numeric" maxlength="4" id="pin" placeholder="Code PIN">
+    <button class="b-primary" onclick="checkPin()">Entrer</button>
+    <p class="err" id="pin-err">Code incorrect.</p>
+  </div>
+
+  <div id="main-screen" class="hidden">
+    <p class="status" id="status"><span class="dot" id="dot"></span>Suivi arrêté</p>
+    <button class="b-primary" id="btn-start" onclick="startTracking()">Démarrer la tournée</button>
+    <button class="b-stop hidden" id="btn-stop" onclick="stopTracking()">Terminer la tournée</button>
+    <p class="err" id="geo-err"></p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+let app, db, watchId = null;
+
+function checkPin(){
+  const v = document.getElementById('pin').value;
+  if(v === PRELEVEUR_PIN){
+    localStorage.setItem('zl_preleveur_ok','1');
+    document.getElementById('pin-screen').classList.add('hidden');
+    document.getElementById('main-screen').classList.remove('hidden');
+    initFirebase();
+  } else {
+    document.getElementById('pin-err').style.display='block';
+  }
+}
+
+if(localStorage.getItem('zl_preleveur_ok')==='1'){
+  document.getElementById('pin-screen').classList.add('hidden');
+  document.getElementById('main-screen').classList.remove('hidden');
+  initFirebase();
+}
+
+function initFirebase(){
+  try{
+    app = firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  }catch(e){
+    document.getElementById('geo-err').textContent = 'Configuration Firebase manquante — contacter le support technique.';
+    document.getElementById('geo-err').style.display='block';
+    document.getElementById('btn-start').disabled = true;
+  }
+}
+
+function startTracking(){
+  if(!navigator.geolocation){
+    document.getElementById('geo-err').textContent = "La géolocalisation n'est pas disponible sur cet appareil.";
+    document.getElementById('geo-err').style.display='block';
+    return;
+  }
+  document.getElementById('btn-start').classList.add('hidden');
+  document.getElementById('btn-stop').classList.remove('hidden');
+  document.getElementById('status').innerHTML = '<span class="dot live" id="dot"></span>Suivi actif — tournée en cours';
+
+  watchId = navigator.geolocation.watchPosition(pos => {
+    db.ref('live/preleveur').set({
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      active: true,
+      updatedAt: Date.now()
+    });
+  }, err => {
+    document.getElementById('geo-err').textContent = "Erreur GPS : " + err.message + " — vérifier que la localisation est autorisée.";
+    document.getElementById('geo-err').style.display='block';
+  }, { enableHighAccuracy:true, maximumAge:5000, timeout:15000 });
+}
+
+function stopTracking(){
+  if(watchId !== null){
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  if(db){
+    db.ref('live/preleveur').update({ active:false });
+  }
+  document.getElementById('btn-stop').classList.add('hidden');
+  document.getElementById('btn-start').classList.remove('hidden');
+  document.getElementById('status').innerHTML = '<span class="dot" id="dot"></span>Suivi arrêté';
+  document.getElementById('geo-err').style.display='none';
+}
+</script>
+</body>
+</html>

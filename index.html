@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>ZaidiLab — Analyses Médicales Tanger</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--navy:#06335f;--blue:#004d9b;--sky:#2f8ae0;--gold:#c8a94a;--bg:#f4f7fb;--white:#fff;--text:#152238;--muted:#64748b;--border:#dde3ef;--success:#166534;--success-bg:#dcfce7;--danger:#dc2626;--danger-bg:#fee2e2}
@@ -126,6 +127,10 @@ textarea.fi{resize:none;min-height:65px}
 .rx-pick i{font-size:18px;color:var(--sky)}
 .rx-box img{display:block;width:100%;max-height:160px;object-fit:cover}
 .rx-note{font-size:10.5px;color:var(--muted);line-height:1.4;margin-bottom:10px}
+.track-status{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--navy)}
+.dot-live{width:10px;height:10px;border-radius:50%;background:#2fb86e;flex-shrink:0;animation:zlpulse 1.4s infinite}
+@keyframes zlpulse{0%{box-shadow:0 0 0 0 rgba(47,184,110,.5)}70%{box-shadow:0 0 0 9px rgba(47,184,110,0)}100%{box-shadow:0 0 0 0 rgba(47,184,110,0)}}
+.track-time{margin-left:auto;font-size:11px;font-weight:400;color:var(--muted)}
 .empty{text-align:center;padding:26px;color:var(--muted);font-size:13px}
 .empty i{font-size:30px;display:block;margin-bottom:7px;color:var(--border)}
 </style>
@@ -154,6 +159,7 @@ textarea.fi{resize:none;min-height:65px}
   <button class="nb active" onclick="showPage('home')" id="nav-home"><i class="ti ti-flask"></i>Domicile</button>
   <button class="nb" onclick="showPage('prices')" id="nav-prices"><i class="ti ti-tag"></i>Tarifs</button>
   <button class="nb" onclick="showPage('location')" id="nav-location"><i class="ti ti-map-pin"></i>Labo</button>
+  <button class="nb" onclick="showPage('track')" id="nav-track"><i class="ti ti-navigation"></i>Suivi</button>
 </nav>
 
 <div class="content">
@@ -293,8 +299,35 @@ textarea.fi{resize:none;min-height:65px}
   <p style="text-align:center;margin-top:12px"><a href="politique-confidentialite.html" style="font-size:11px;color:var(--muted);text-decoration:underline" target="_blank">Politique de confidentialité</a></p>
 </div>
 
+<!-- SUIVI EN DIRECT -->
+<div class="page" id="page-track">
+  <p class="ptitle">Suivi du préleveur</p>
+  <p class="psub">Position en direct pendant votre prélèvement à domicile.</p>
+  <div class="card" id="track-idle">
+    <div style="text-align:center;padding:18px 6px">
+      <i class="ti ti-navigation-off" style="font-size:34px;color:var(--border)"></i>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5">Aucun suivi en direct actif pour le moment.<br>Le suivi s'affiche automatiquement dès que le préleveur démarre sa tournée vers chez vous.</p>
+    </div>
+  </div>
+  <div id="track-live" style="display:none">
+    <div class="track-status">
+      <span class="dot-live"></span>
+      <span id="track-text">Préleveur en route</span>
+      <span class="track-time" id="track-time"></span>
+    </div>
+    <div class="mapw" id="track-mapwrap">
+      <div id="track-map" style="width:100%;height:100%"></div>
+    </div>
+  </div>
+  <button class="btn bwa" style="margin-top:14px" onclick="window.open('https://wa.me/212601501476','_blank')"><i class="ti ti-brand-whatsapp"></i>Contacter ZaidiLab</button>
 </div>
 
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 
 const analyses=[
@@ -406,6 +439,7 @@ function showPage(p){
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nav-'+p).classList.add('active');
   document.querySelector('.content').scrollTop=0;
+  if(p==='track') initTrack();
 }
 
 // TARIFS
@@ -477,6 +511,57 @@ function sendWA(){
 }
 
 function fmtD(d){if(!d)return '';const[y,m,day]=d.split('-');return `${day}/${m}/${y}`;}
+
+// SUIVI EN DIRECT DU PRÉLEVEUR
+let trackApp,trackDb,trackMap,trackMarker,trackInited=false,trackTimer=null;
+function initTrack(){
+  if(trackInited) return;
+  trackInited = true;
+  try{
+    trackApp = firebase.initializeApp(firebaseConfig, 'patientApp');
+    trackDb = firebase.database(trackApp);
+  }catch(e){
+    console.warn('Firebase non configuré :', e);
+    return;
+  }
+  trackDb.ref('live/preleveur').on('value', snap => {
+    const d = snap.val();
+    const isStale = !d || !d.updatedAt || (Date.now() - d.updatedAt) > 120000; // > 2 min sans mise à jour
+    if(!d || !d.active || isStale){
+      document.getElementById('track-idle').style.display='block';
+      document.getElementById('track-live').style.display='none';
+      if(trackTimer){clearInterval(trackTimer);trackTimer=null;}
+      return;
+    }
+    document.getElementById('track-idle').style.display='none';
+    document.getElementById('track-live').style.display='block';
+
+    if(!trackMap){
+      trackMap = L.map('track-map').setView([d.lat, d.lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(trackMap);
+      const icon = L.divIcon({
+        html: '<div style="background:#06335f;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>',
+        className: '', iconSize: [16,16]
+      });
+      trackMarker = L.marker([d.lat, d.lng], {icon}).addTo(trackMap);
+    } else {
+      trackMarker.setLatLng([d.lat, d.lng]);
+      trackMap.panTo([d.lat, d.lng]);
+      setTimeout(()=>trackMap.invalidateSize(), 50);
+    }
+
+    const updateTimeText = () => {
+      const secs = Math.floor((Date.now() - d.updatedAt)/1000);
+      document.getElementById('track-time').textContent = secs < 10 ? 'à l\'instant' : 'il y a ' + secs + 's';
+    };
+    updateTimeText();
+    if(trackTimer) clearInterval(trackTimer);
+    trackTimer = setInterval(updateTimeText, 3000);
+  });
+}
 
 renderAnalyses();
 renderList();
