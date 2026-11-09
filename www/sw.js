@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zaidilab-v5';
+const CACHE_NAME = 'zaidilab-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -9,9 +9,17 @@ const ASSETS = [
   './firebase-config.js'
 ];
 
+// IMPORTANT : on force un vrai aller-retour réseau (cache:'reload') pour
+// chaque fichier mis en cache à l'installation, sinon le navigateur peut
+// réutiliser une copie HTTP périmée et "figer" une ancienne version de
+// l'app malgré le changement de CACHE_NAME.
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(ASSETS.map(url =>
+        fetch(url, { cache: 'reload' }).then(resp => cache.put(url, resp))
+      ))
+    )
   );
   self.skipWaiting();
 });
