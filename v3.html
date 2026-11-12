@@ -6,6 +6,11 @@
 <meta name="theme-color" content="#12306b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ZaidiLab">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>ZaidiLab — Analyses Médicales Tanger</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -167,6 +172,13 @@ textarea.fi{resize:none;min-height:72px}
 .nav .mid.on i{transform:translateY(0) scale(1.06)}
 .foot{text-align:center;font-size:11.5px;color:var(--muted);padding:18px 10px}
 
+.top{padding-top:calc(10px + env(safe-area-inset-top))}
+.tbox{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:16px;padding:13px 15px;margin-bottom:11px;font-size:13.5px;font-weight:700;color:var(--navy);box-shadow:var(--shadow)}
+.tbox small{margin-inline-start:auto;font-weight:500;color:var(--muted);font-size:11.5px}
+#tmap{height:320px;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px}
+.pin{letter-spacing:8px;text-align:center;font-size:20px}
+.ok{color:var(--ok)}.bad{color:var(--err)}
+.foot a{color:var(--blue);text-decoration:underline}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -236,7 +248,12 @@ textarea.fi{resize:none;min-height:72px}
     <a class="btn btn-l full" target="_blank" rel="noopener" href="https://maps.google.com/?q=ZaidiLab+Tanger+Avenue+Moulay+Ali+Chrif+278">🗺️ <span data-i="map"></span></a>
     <p style="margin:12px 0 0;font-size:12px">☎️ 05 39 35 60 54 · 05 39 95 91 16<br>✉️ zaidilabtanger@gmail.com · 🌐 www.zaidilab.com</p>
   </div>
-  <div class="foot">ZaidiLab © Tanger</div>
+  <div class="card">
+    <h3>📍 <span data-i="ct_t"></span></h3>
+    <p data-i="ct_d"></p>
+    <button class="btn btn-n full" onclick="go('track')">🛵 <span data-i="ct_b"></span></button>
+  </div>
+  <div class="foot">ZaidiLab © Tanger<br><a href="politique-confidentialite.html" target="_blank" rel="noopener" data-i="privacy"></a> · <a href="#" onclick="go('prel');return false" data-i="prel_link"></a></div>
 </section>
 
 <!-- TESTS -->
@@ -296,6 +313,35 @@ textarea.fi{resize:none;min-height:72px}
   <div class="note" style="margin-top:4px">⚕️ <span data-i="adisc"></span></div>
 </section>
 
+<!-- TRACK -->
+<section class="page" id="p-track">
+  <h2 class="t">📍 <span data-i="trk_t"></span></h2>
+  <p class="s" data-i="trk_s"></p>
+  <div class="card" id="t-idle"><h3>😴 <span data-i="trk_idle"></span></h3><p data-i="trk_idle_d"></p>
+    <button class="btn btn-wa full" onclick="wa('')">💬 WhatsApp</button></div>
+  <div id="t-live" style="display:none">
+    <div class="tbox"><span class="dot"></span><span data-i="trk_live"></span><small id="t-time"></small></div>
+    <div id="tmap"></div>
+  </div>
+</section>
+
+<!-- PRELEVEUR -->
+<section class="page" id="p-prel">
+  <h2 class="t">🩺 <span data-i="pr_t"></span></h2>
+  <p class="s" data-i="pr_s"></p>
+  <div class="card" id="pr-pin">
+    <input class="fi pin" id="pr-code" type="password" inputmode="numeric" maxlength="4" data-ph="pr_ph">
+    <button class="btn btn-n full" onclick="prelLogin()"><span data-i="pr_enter"></span></button>
+    <p class="msg" id="pr-bad"></p>
+  </div>
+  <div class="card" id="pr-main" style="display:none">
+    <div class="tbox" style="box-shadow:none;background:#f3f8ff"><span class="dot off" id="pr-dot"></span><span id="pr-st"></span></div>
+    <button class="btn btn-t full" id="pr-start" onclick="prelStart()">▶ <span data-i="pr_start"></span></button>
+    <button class="btn full" id="pr-stop" style="display:none;background:var(--err);color:#fff" onclick="prelStop()">■ <span data-i="pr_stop"></span></button>
+    <p class="msg" id="pr-err"></p>
+  </div>
+</section>
+
 </div>
 
 <div class="pill" id="pill" onclick="go('request')"><span id="pill-t"></span><span>→</span></div>
@@ -339,7 +385,7 @@ const CAT={bio:'🧪',hem:'🩸',bac:'🦠',hor:'⚖️',ser:'🛡️',spe:'🔬
 /* ====== TRADUCTIONS ====== */
 const TR={
 fr:{
- dir:'ltr',hello:'Bienvenue chez ZaidiLab 👋',h1:'Votre santé, nos analyses, chez vous.',
+ ct_t:'Suivi du préleveur en direct',ct_d:'Voyez où se trouve notre préleveur pendant sa tournée à domicile.',ct_b:'Voir le suivi',privacy:'Confidentialité',prel_link:'Espace préleveur',trk_t:'Suivi en direct',trk_s:'Position de notre préleveur pendant sa tournée.',trk_idle:'Aucune tournée en cours',trk_idle_d:'Le suivi apparaît dès que le préleveur démarre sa tournée. Pour toute question, écrivez-nous sur WhatsApp.',trk_live:'Préleveur en route',now:'à l’instant',ago:'il y a {n}s',pr_t:'Mode préleveur',pr_s:'Diffuse ta position pendant ta tournée.',pr_ph:'Code PIN',pr_enter:'Entrer',pr_bad:'Code incorrect.',pr_start:'Démarrer la tournée',pr_stop:'Terminer la tournée',pr_on:'Suivi actif — tournée en cours',pr_off:'Suivi arrêté',pr_noconn:'Connexion indisponible — réessayez.',pr_gps:'Erreur GPS : autorisez la localisation.', dir:'ltr',hello:'Bienvenue chez ZaidiLab 👋',h1:'Votre santé, nos analyses, chez vous.',
  hsub:'Centre d’analyses médicales à Tanger — prélèvement à domicile 7j/7.',cta1:'Prélèvement à domicile',cta2:'Voir les analyses',
  s1:'À domicile',s2:'Résultats rapides',s3:'100 % confidentiel',
  dtitle:'Nos 9 spécialités',how:'Comment ça marche',more:'Services & contact',
@@ -380,7 +426,7 @@ fr:{
  dn:['Biochimie','Hématologie','Hormonologie','Immunologie','Microbiologie','Virologie','Biologie moléculaire (PCR)','Spermologie','Biologie de la reproduction']
 },
 es:{
- dir:'ltr',hello:'Bienvenido a ZaidiLab 👋',h1:'Tu salud, nuestros análisis, en tu casa.',
+ ct_t:'Seguimiento en directo del equipo de extracción',ct_d:'Mira dónde está nuestro equipo de extracción durante su ruta a domicilio.',ct_b:'Ver seguimiento',privacy:'Privacidad',prel_link:'Espacio extracción',trk_t:'Seguimiento en directo',trk_s:'Posición de nuestro equipo de extracción durante su ruta.',trk_idle:'Ninguna ruta en curso',trk_idle_d:'El seguimiento aparece en cuanto el equipo inicia su ruta. Para cualquier duda, escríbenos por WhatsApp.',trk_live:'Equipo de extracción en camino',now:'ahora mismo',ago:'hace {n}s',pr_t:'Modo extracción',pr_s:'Comparte tu posición durante tu ruta.',pr_ph:'Código PIN',pr_enter:'Entrar',pr_bad:'Código incorrecto.',pr_start:'Iniciar la ruta',pr_stop:'Terminar la ruta',pr_on:'Seguimiento activo — ruta en curso',pr_off:'Seguimiento detenido',pr_noconn:'Sin conexión — reintenta.',pr_gps:'Error GPS: permite la ubicación.', dir:'ltr',hello:'Bienvenido a ZaidiLab 👋',h1:'Tu salud, nuestros análisis, en tu casa.',
  hsub:'Centro de análisis médicos en Tánger — toma de muestras a domicilio los 7 días.',cta1:'Toma a domicilio',cta2:'Ver análisis',
  s1:'A domicilio',s2:'Resultados rápidos',s3:'100 % confidencial',
  dtitle:'Nuestras 9 especialidades',how:'Cómo funciona',more:'Servicios y contacto',
@@ -421,7 +467,7 @@ es:{
  dn:['Bioquímica','Hematología','Hormonas','Inmunología','Microbiología','Virología','Biología molecular (PCR)','Espermiograma','Biología de la reproducción']
 },
 ar:{
- dir:'rtl',hello:'مرحبا بكم في زايدي لاب 👋',h1:'صحتكم، تحاليلنا، في بيتكم.',
+ ct_t:'تتبع فريق أخذ العينات مباشرة',ct_d:'تعرفوا على مكان فريق أخذ العينات أثناء جولته في المنازل.',ct_b:'عرض التتبع',privacy:'الخصوصية',prel_link:'فضاء أخذ العينات',trk_t:'التتبع المباشر',trk_s:'موقع فريق أخذ العينات أثناء جولته.',trk_idle:'لا توجد جولة حاليا',trk_idle_d:'يظهر التتبع بمجرد بدء الفريق جولته. لأي سؤال راسلونا عبر واتساب.',trk_live:'فريق أخذ العينات في الطريق',now:'الآن',ago:'منذ {n} ث',pr_t:'وضع أخذ العينات',pr_s:'شارك موقعك أثناء جولتك.',pr_ph:'الرمز السري',pr_enter:'دخول',pr_bad:'رمز غير صحيح.',pr_start:'بدء الجولة',pr_stop:'إنهاء الجولة',pr_on:'التتبع نشط — الجولة جارية',pr_off:'التتبع متوقف',pr_noconn:'لا يوجد اتصال — أعد المحاولة.',pr_gps:'خطأ GPS: اسمح بالوصول إلى الموقع.', dir:'rtl',hello:'مرحبا بكم في زايدي لاب 👋',h1:'صحتكم، تحاليلنا، في بيتكم.',
  hsub:'مركز التحاليل الطبية بطنجة — أخذ العينات في المنزل طوال أيام الأسبوع.',cta1:'أخذ العينة في المنزل',cta2:'عرض التحاليل',
  s1:'في المنزل',s2:'نتائج سريعة',s3:'سرية تامة',
  dtitle:'تخصصاتنا التسعة',how:'كيف يعمل؟',more:'الخدمات والتواصل',
@@ -481,7 +527,7 @@ function setLang(l){
   $('gps-t').textContent=gpsLink?T().gps_ok:T().gps;
   renderAll();
 }
-function renderAll(){renderDiscs();renderSteps();renderCats();renderTests();renderSlots();renderCart();renderGuide();renderChatInit();renderStatus()}
+function renderAll(){if($('pr-st'))prState(prNative!==null||prWatch!==null);renderDiscs();renderSteps();renderCats();renderTests();renderSlots();renderCart();renderGuide();renderChatInit();renderStatus()}
 
 /* ====== NAV ====== */
 function go(p){
@@ -489,6 +535,8 @@ function go(p){
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
   window.scrollTo({top:0,behavior:'smooth'});
   if(p==='request')renderCart();
+  if(p==='track')initTrack();
+  if(p==='prel'){let ok=false;try{ok=localStorage.getItem('zl_preleveur_ok')==='1'}catch(e){}if(ok)loadFB().then(()=>prShow(true));else prShow(false)}
   updatePill(p);
 }
 function updatePill(p){
@@ -543,7 +591,8 @@ function getGPS(){
     $('gps').classList.add('ok');$('gps-t').textContent=T().gps_ok;
   },()=>{$('gps-t').textContent=T().gps_ko},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
-function wa(text){window.open('https://wa.me/'+WA_NUM+(text?'?text='+encodeURIComponent(text):''),'_blank')}
+function openExt(u){try{const w=window.open(u,'_blank');if(!w)location.href=u}catch(e){location.href=u}}
+function wa(text){openExt('https://wa.me/'+WA_NUM+(text?'?text='+encodeURIComponent(text):''))}
 function sendReq(){
   const n=$('f-name').value.trim(),p=$('f-phone').value.trim(),a=$('f-addr').value.trim(),d=$('f-date').value;
   const m=$('rmsg');
@@ -595,6 +644,71 @@ async function ask(text){
   if(!reply)reply=localAnswer(q)+(API_PROXY?'':'');
   th.remove();bub(reply,'bot');hist.push({role:'assistant',content:reply});busy=false;
 }
+
+
+/* ====== SUIVI + PRELEVEUR ====== */
+function loadScript(src){return new Promise(r=>{if(document.querySelector('script[src="'+src+'"]'))return r();const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=r;document.head.appendChild(s)})}
+let fbReady=null,fbDb=null;
+function loadFB(){if(fbReady)return fbReady;fbReady=(async()=>{
+  await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+  await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+  await loadScript('firebase-config.js');
+  try{const a=firebase.apps.length?firebase.app():firebase.initializeApp(firebaseConfig);fbDb=firebase.database(a)}catch(e){fbDb=null}
+})();return fbReady}
+function loadLeaflet(){return new Promise(r=>{if(window.L)return r();const l=document.createElement('link');l.rel='stylesheet';l.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(l);const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=r;s.onerror=r;document.head.appendChild(s)})}
+let tMap,tMark,tInit=false,tTimer=null;
+async function initTrack(){
+  if(tInit)return;tInit=true;
+  await Promise.all([loadFB(),loadLeaflet()]);
+  if(!fbDb||!window.L)return;
+  fbDb.ref('live/preleveur').on('value',snap=>{
+    const d=snap.val();
+    const stale=!d||!d.updatedAt||(Date.now()-d.updatedAt)>120000;
+    if(!d||!d.active||stale){$('t-idle').style.display='block';$('t-live').style.display='none';clearInterval(tTimer);return}
+    $('t-idle').style.display='none';$('t-live').style.display='block';
+    if(!tMap){
+      tMap=L.map('tmap').setView([d.lat,d.lng],15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(tMap);
+      tMark=L.marker([d.lat,d.lng],{icon:L.divIcon({html:'<div style="background:#12306b;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>',className:'',iconSize:[18,18]})}).addTo(tMap);
+    }else{tMark.setLatLng([d.lat,d.lng]);tMap.panTo([d.lat,d.lng])}
+    setTimeout(()=>tMap.invalidateSize(),60);
+    const upd=()=>{const s=Math.floor((Date.now()-d.updatedAt)/1000);$('t-time').textContent=s<10?T().now:T().ago.replace('{n}',s)};
+    upd();clearInterval(tTimer);tTimer=setInterval(upd,3000);
+  });
+}
+/* Préleveur — GPS natif en arrière-plan sur l'app (Capacitor), GPS web sinon */
+let prWatch=null,prNative=null;
+function prShow(ok){$('pr-pin').style.display=ok?'none':'block';$('pr-main').style.display=ok?'block':'none';if(ok)prState(false)}
+function prState(on){$('pr-dot').classList.toggle('off',!on);$('pr-st').textContent=on?T().pr_on:T().pr_off;$('pr-start').style.display=on?'none':'flex';$('pr-stop').style.display=on?'flex':'none'}
+function prMsg(t){const m=$('pr-err');m.textContent=t||'';m.className=t?'msg err':'msg'}
+async function prelLogin(){
+  await loadFB();
+  const ok=typeof PRELEVEUR_PIN!=='undefined'&&$('pr-code').value===PRELEVEUR_PIN;
+  const b=$('pr-bad');
+  if(ok){try{localStorage.setItem('zl_preleveur_ok','1')}catch(e){}b.className='msg';prShow(true)}
+  else{b.textContent=T().pr_bad;b.className='msg err'}
+}
+function prPush(lat,lng,acc){if(fbDb)fbDb.ref('live/preleveur').set({lat,lng,accuracy:acc||0,active:true,updatedAt:Date.now()})}
+async function prelStart(){
+  await loadFB();prMsg('');
+  if(!fbDb){prMsg(T().pr_noconn);return}
+  const BG=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BackgroundGeolocation;
+  if(BG){
+    try{prNative=await BG.addWatcher({backgroundTitle:'ZaidiLab',backgroundMessage:T().pr_on,requestPermissions:true,stale:false,distanceFilter:15},(loc,err)=>{if(err){prMsg(T().pr_gps);return}if(loc)prPush(loc.latitude,loc.longitude,loc.accuracy)});prState(true)}catch(e){prMsg(T().pr_gps)}
+    return;
+  }
+  if(!navigator.geolocation){prMsg(T().pr_gps);return}
+  prWatch=navigator.geolocation.watchPosition(p=>prPush(p.coords.latitude,p.coords.longitude,p.coords.accuracy),()=>prMsg(T().pr_gps),{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+  prState(true);
+}
+async function prelStop(){
+  const BG=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BackgroundGeolocation;
+  if(BG&&prNative){try{await BG.removeWatcher({id:prNative})}catch(e){}prNative=null}
+  if(prWatch!==null){navigator.geolocation.clearWatch(prWatch);prWatch=null}
+  if(fbDb)fbDb.ref('live/preleveur').update({active:false});
+  prState(false);prMsg('');
+}
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 
 /* ====== INIT ====== */
 setLang(lang);go('home');

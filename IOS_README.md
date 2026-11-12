@@ -30,3 +30,9 @@ Le wrapper Android (TWA) est préparé séparément (`twa-manifest.json`, clé d
 signature déjà générée et envoyée à Adil). Reste : configurer le DNS de
 `app.zaidilab.com` puis créer le compte Google Play Developer (25 USD, paiement
 unique) avant de pouvoir publier.
+
+## v3 (Apple + suivi du préleveur)
+- `v3.html` = nouvelle app (FR/ES/AR). `sync-www.sh` la copie dans `www/index.html` pour l'app native ; le `index.html` racine (site en ligne) reste inchangé.
+- Suivi live : Firebase `live/preleveur`. Sur iPhone natif, le plugin `@capacitor-community/background-geolocation` garde le GPS actif écran verrouillé (Info.plist : `UIBackgroundModes=location` + `NSLocationAlwaysAndWhenInUseUsageDescription`).
+- À faire sur un Mac : `npm install && ./sync-www.sh`, ouvrir `ios/App` dans Xcode, choisir l'équipe Apple Developer, Archive → App Store Connect.
+- Sécurité : le PIN préleveur et les règles Firebase sont faibles côté client ; durcir les règles Firebase avant la production.
