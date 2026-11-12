@@ -281,13 +281,16 @@ textarea.fi{resize:none;min-height:72px}
     <input class="fi" id="f-date" type="date">
     <label class="fl2" data-i="f_time"></label>
     <div class="slots" id="slots"></div>
+    <label class="fl2" data-i="f_zone"></label>
+    <select class="fi" id="f-zone" onchange="renderCart()"><option value="50" data-i="z1"></option><option value="100" data-i="z2"></option></select>
     <label class="fl2" data-i="f_tests"></label>
     <div id="cartbox" style="margin-bottom:6px"></div>
     <button class="btn btn-l full" style="margin-bottom:12px" onclick="go('tests')">➕ <span data-i="f_add"></span></button>
     <label class="fl2" data-i="f_notes"></label>
     <textarea class="fi" id="f-notes" data-ph="ph_notes"></textarea>
     <div class="msg" id="rmsg"></div>
-    <button class="btn btn-wa full" onclick="sendReq()">💬 <span data-i="f_send"></span></button>
+    <button class="btn btn-n full" id="sendbtn" onclick="sendReq()">📨 <span data-i="f_send"></span></button>
+    <div id="okbox" class="card" style="display:none;text-align:center;margin-top:12px"></div>
     <p style="margin:2px 0 0;font-size:12px;text-align:center" data-i="f_hint"></p>
   </div>
 </section>
@@ -400,12 +403,12 @@ fr:{
  tt:'Catalogue des analyses',ts:'Appuyez sur + pour ajouter une analyse à votre demande.',tsearch:'🔍 Rechercher une analyse…',all:'Toutes',
  cats:{bio:'Biochimie',hem:'Hématologie',bac:'Bactériologie',hor:'Hormonologie',ser:'Sérologie',spe:'Spermologie'},
  none:'Aucune analyse trouvée.',pill:(n,t)=>`🧪 ${n} analyse${n>1?'s':''} · ${t} MAD`,
- rt:'Prélèvement à domicile',rs:'Remplissez le formulaire, la demande part directement sur WhatsApp.',
+ rt:'Prélèvement à domicile',rs:'Remplissez le formulaire, la demande arrive directement au laboratoire.',
  f_name:'Nom complet *',f_phone:'Téléphone *',f_addr:'Adresse *',f_date:'Date souhaitée *',f_time:'Créneau horaire',f_tests:'Analyses souhaitées',f_add:'Ajouter des analyses',f_notes:'Notes / ordonnance',
  ph_name:'Ex : Fatima Benali',ph_addr:'Rue, quartier — Tanger',ph_notes:'À jeun, ordonnance, informations utiles…',
  gps:'Partager ma position GPS',gps_w:'Localisation…',gps_ok:'Position enregistrée ✔',gps_ko:'Position indisponible — réessayez',
  cartempty:'Aucune analyse sélectionnée (facultatif : précisez dans les notes).',total:'Total estimé',
- f_send:'Envoyer sur WhatsApp',f_hint:'Le laboratoire vous rappelle pour confirmer le rendez-vous.',f_err:'Remplissez : nom, téléphone, adresse et date.',
+ f_send:'Envoyer la demande',f_zone:'Zone de déplacement',z1:'Tanger centre · +50 MAD',z2:'Périphérie / hors centre · +100 MAD',fee:'Frais de déplacement',ok_t:'Demande envoyée ✅',ok_s:'Le laboratoire vous rappelle très vite pour confirmer.',ok_wa:'Aussi sur WhatsApp',ok_call:'Appeler le labo',ok_mail:'Envoyer par e-mail',sent_fail:'Envoi indisponible : on ouvre WhatsApp.',f_hint:'Le laboratoire vous rappelle pour confirmer le rendez-vous.',f_err:'Remplissez : nom, téléphone, adresse et date.',
  gt:'Guide avant votre analyse',gs:'Comment bien vous préparer, simplement.',
  g:[
   ['🥣','Faut-il être à jeun ?','Pour la glycémie et le bilan lipidique, venez à jeun depuis 8 à 12 heures (l’eau est autorisée). Évitez l’alcool la veille. La NFS, la CRP et la plupart des sérologies ne demandent pas de jeûne.'],
@@ -441,12 +444,12 @@ es:{
  tt:'Catálogo de análisis',ts:'Pulsa + para añadir un análisis a tu solicitud.',tsearch:'🔍 Buscar un análisis…',all:'Todos',
  cats:{bio:'Bioquímica',hem:'Hematología',bac:'Bacteriología',hor:'Hormonas',ser:'Serología',spe:'Espermiograma'},
  none:'No se encontró ningún análisis.',pill:(n,t)=>`🧪 ${n} análisis · ${t} MAD`,
- rt:'Toma de muestra a domicilio',rs:'Rellena el formulario y la solicitud sale directa por WhatsApp.',
+ rt:'Toma de muestra a domicilio',rs:'Rellena el formulario y la solicitud llega directa al laboratorio.',
  f_name:'Nombre completo *',f_phone:'Teléfono *',f_addr:'Dirección *',f_date:'Fecha deseada *',f_time:'Franja horaria',f_tests:'Análisis deseados',f_add:'Añadir análisis',f_notes:'Notas / receta',
  ph_name:'Ej: Fatima Benali',ph_addr:'Calle, barrio — Tánger',ph_notes:'En ayunas, receta, datos útiles…',
  gps:'Compartir mi ubicación GPS',gps_w:'Localizando…',gps_ok:'Ubicación guardada ✔',gps_ko:'Ubicación no disponible — reintenta',
  cartempty:'Ningún análisis seleccionado (opcional: indícalo en las notas).',total:'Total estimado',
- f_send:'Enviar por WhatsApp',f_hint:'El laboratorio te llamará para confirmar la cita.',f_err:'Rellena: nombre, teléfono, dirección y fecha.',
+ f_send:'Enviar solicitud',f_zone:'Zona de desplazamiento',z1:'Tánger centro · +50 MAD',z2:'Afueras / fuera del centro · +100 MAD',fee:'Gastos de desplazamiento',ok_t:'Solicitud enviada ✅',ok_s:'El laboratorio te llamará muy pronto para confirmar.',ok_wa:'También por WhatsApp',ok_call:'Llamar al laboratorio',ok_mail:'Enviar por correo',sent_fail:'Envío no disponible: abrimos WhatsApp.',f_hint:'El laboratorio te llamará para confirmar la cita.',f_err:'Rellena: nombre, teléfono, dirección y fecha.',
  gt:'Guía antes de tu análisis',gs:'Cómo prepararte bien, de forma sencilla.',
  g:[
   ['🥣','¿Hay que ir en ayunas?','Para la glucemia y el perfil lipídico ven en ayunas de 8 a 12 horas (se puede beber agua). Evita el alcohol la víspera. El hemograma, la PCR y la mayoría de serologías no requieren ayuno.'],
@@ -482,12 +485,12 @@ ar:{
  tt:'دليل التحاليل',ts:'اضغطوا + لإضافة تحليل إلى طلبكم.',tsearch:'🔍 ابحثوا عن تحليل…',all:'الكل',
  cats:{bio:'الكيمياء الحيوية',hem:'أمراض الدم',bac:'البكتيريولوجيا',hor:'الهرمونات',ser:'المصليات',spe:'تحليل المني'},
  none:'لم يتم العثور على أي تحليل.',pill:(n,t)=>`🧪 ${n} تحليل · ${t} درهم`,
- rt:'أخذ العينة في المنزل',rs:'املؤوا الاستمارة وسيصل الطلب مباشرة عبر واتساب.',
+ rt:'أخذ العينة في المنزل',rs:'املؤوا الاستمارة وسيصل الطلب مباشرة إلى المختبر.',
  f_name:'الاسم الكامل *',f_phone:'الهاتف *',f_addr:'العنوان *',f_date:'التاريخ المرغوب *',f_time:'الفترة الزمنية',f_tests:'التحاليل المطلوبة',f_add:'إضافة تحاليل',f_notes:'ملاحظات / وصفة طبية',
  ph_name:'مثال: فاطمة بنعلي',ph_addr:'الشارع، الحي — طنجة',ph_notes:'صائم، وصفة طبية، معلومات مفيدة…',
  gps:'مشاركة موقعي GPS',gps_w:'جاري التحديد…',gps_ok:'تم حفظ الموقع ✔',gps_ko:'الموقع غير متاح — أعيدوا المحاولة',
  cartempty:'لم يتم اختيار أي تحليل (اختياري: اذكروه في الملاحظات).',total:'المجموع التقديري',
- f_send:'إرسال عبر واتساب',f_hint:'سيتصل بكم المختبر لتأكيد الموعد.',f_err:'املؤوا: الاسم والهاتف والعنوان والتاريخ.',
+ f_send:'إرسال الطلب',f_zone:'منطقة التنقل',z1:'وسط طنجة · +50 درهم',z2:'الضواحي / خارج الوسط · +100 درهم',fee:'مصاريف التنقل',ok_t:'تم إرسال الطلب ✅',ok_s:'سيتصل بكم المختبر قريبا للتأكيد.',ok_wa:'أيضا عبر واتساب',ok_call:'اتصلوا بالمختبر',ok_mail:'إرسال بالبريد',sent_fail:'الإرسال غير متاح: سنفتح واتساب.',f_hint:'سيتصل بكم المختبر لتأكيد الموعد.',f_err:'املؤوا: الاسم والهاتف والعنوان والتاريخ.',
  gt:'دليل ما قبل التحليل',gs:'كيف تستعدون بشكل صحيح وبسهولة.',
  g:[
   ['🥣','هل يجب أن أكون صائما؟','بالنسبة لسكر الدم وتحليل الدهون يُرجى الحضور صائما من 8 إلى 12 ساعة (يُسمح بالماء). تجنبوا الكحول في اليوم السابق. تحليل تعداد الدم وCRP ومعظم المصليات لا تتطلب صياما.'],
@@ -577,11 +580,11 @@ function renderSlots(){
   $('slots').innerHTML=S.map(s=>`<button class="slot ${s===slot?'on':''}" onclick="setSlot('${s}')">${s}</button>`).join('');
 }
 function setSlot(s){slot=slot===s?'':s;renderSlots()}
+function feeV(){const z=$('f-zone');return z?+z.value:50}
 function renderCart(){
   const ids=[...cart];
-  if(!ids.length){$('cartbox').innerHTML=`<p class="s" style="margin:0 0 8px">${T().cartempty}</p>`;return}
-  const tot=ids.reduce((s,i)=>s+A[i][2],0);
-  $('cartbox').innerHTML=ids.map(i=>`<div class="mini"><span>${A[i][0]} · <b>${A[i][2]} MAD</b></span><button onclick="tog(${i})">✕</button></div>`).join('')+`<div class="tot"><span>${T().total}</span><span>${tot} MAD</span></div>`;
+  const sub=ids.reduce((s,i)=>s+A[i][2],0),fee=feeV(),tot=sub+fee;
+  $('cartbox').innerHTML=(ids.length?ids.map(i=>`<div class="mini"><span>${A[i][0]} · <b>${A[i][2]} MAD</b></span><button onclick="tog(${i})">✕</button></div>`).join(''):`<p class="s" style="margin:0 0 8px">${T().cartempty}</p>`)+`<div class="mini"><span>${T().fee}</span><b>${fee} MAD</b></div><div class="tot"><span>${T().total}</span><span>${tot} MAD</span></div>`;
 }
 function getGPS(){
   if(!navigator.geolocation){$('gps-t').textContent=T().gps_ko;return}
@@ -593,21 +596,29 @@ function getGPS(){
 }
 function openExt(u){try{const w=window.open(u,'_blank');if(!w)location.href=u}catch(e){location.href=u}}
 function wa(text){openExt('https://wa.me/'+WA_NUM+(text?'?text='+encodeURIComponent(text):''))}
-function sendReq(){
+async function sendReq(){
   const n=$('f-name').value.trim(),p=$('f-phone').value.trim(),a=$('f-addr').value.trim(),d=$('f-date').value;
   const m=$('rmsg');
   if(!n||!p||!a||!d){m.textContent=T().f_err;m.className='msg err';return}
   m.className='msg';
-  const ids=[...cart],tot=ids.reduce((s,i)=>s+A[i][2],0),notes=$('f-notes').value.trim();
-  // message toujours en français pour l'équipe du laboratoire
+  const ids=[...cart],sub=ids.reduce((s,i)=>s+A[i][2],0),fee=feeV(),tot=sub+fee,notes=$('f-notes').value.trim();
   const msg=`Bonjour ZaidiLab 👋\n\n*Demande de prélèvement à domicile*\n👤 ${n}\n📞 ${p}\n🏠 ${a}\n📅 ${d}${slot?' · '+slot:''}`
    +(gpsLink?`\n📍 ${gpsLink}`:'')
-   +(ids.length?`\n\n🔬 Analyses :\n${ids.map(i=>'• '+A[i][0]).join('\n')}\n💰 Total estimé : ${tot} MAD`:'')
+   +(ids.length?`\n\n🔬 Analyses :\n${ids.map(i=>'• '+A[i][0]).join('\n')}`:'')
+   +`\n🚗 Déplacement : ${fee} MAD\n💰 Total estimé : ${tot} MAD`
    +(notes?`\n\n📝 ${notes}`:'')+`\n\n(Langue du patient : ${lang.toUpperCase()})`;
-  if(SHEETS_URL.startsWith('https://')){
-    try{fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({nom:n,tel:p,adresse:a,date:d,creneau:slot,gps:gpsLink,analyses:ids.map(i=>A[i][0]).join(', '),total:tot,notes:notes,langue:lang})})}catch(e){}
-  }
-  wa(msg);
+  if(!SHEETS_URL.startsWith('https://')){m.textContent=T().sent_fail;m.className='msg err';wa(msg);return}
+  const btn=$('sendbtn');btn.disabled=true;
+  try{
+    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({nom:n,tel:p,adresse:a,date:d,creneau:slot,gps:gpsLink,analyses:ids.map(i=>A[i][0]).join(', '),deplacement:fee,total:tot,notes:notes,langue:lang})});
+  }catch(e){btn.disabled=false;m.textContent=T().sent_fail;m.className='msg err';wa(msg);return}
+  btn.style.display='none';
+  const ok=$('okbox');ok.style.display='block';
+  const mail='mailto:zaidilabtanger@gmail.com?subject='+encodeURIComponent('Demande de prélèvement - '+n)+'&body='+encodeURIComponent(msg.replace(/\*/g,''));
+  ok.innerHTML=`<div style="font-size:42px">✅</div><h3 style="margin:6px 0">${T().ok_t}</h3><p class="s">${T().ok_s}</p>
+  <a class="btn btn-l full" style="margin-bottom:8px" href="tel:+212539356054">📞 ${T().ok_call}</a>
+  <button class="btn btn-wa full" style="margin-bottom:8px" onclick='wa(${JSON.stringify(msg)})'>💬 ${T().ok_wa}</button>
+  <a class="btn btn-l full" href="${mail}">✉️ ${T().ok_mail}</a>`;
 }
 (function(){const t=new Date();$('f-date').min=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')})();
 
