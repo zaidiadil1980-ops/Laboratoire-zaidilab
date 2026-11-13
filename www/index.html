@@ -180,6 +180,9 @@ textarea.fi{resize:none;min-height:72px}
 .ok{color:var(--ok)}.bad{color:var(--err)}
 .foot a{color:var(--blue);text-decoration:underline}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+input[type=tel]{direction:ltr;text-align:start}
+html[dir=rtl] input[type=tel]{text-align:right}
 </style>
 </head>
 <body>
@@ -237,8 +240,8 @@ textarea.fi{resize:none;min-height:72px}
   <div class="card">
     <h3>🕐 <span data-i="hrs"></span></h3>
     <table class="hours">
-      <tr><td data-i="wk"></td><td>07:30 – 21:00</td></tr>
-      <tr><td data-i="we"></td><td>08:00 – 18:00</td></tr>
+      <tr><td data-i="wk"></td><td><span class="ltr">07:30 – 21:00</span></td></tr>
+      <tr><td data-i="we"></td><td><span class="ltr">08:00 – 18:00</span></td></tr>
     </table>
     <div class="row">
       <a class="btn btn-n" href="tel:+212601501476">📞 <span data-i="call"></span></a>
@@ -246,7 +249,7 @@ textarea.fi{resize:none;min-height:72px}
     </div>
     <p style="margin:12px 0 10px">📍 <span data-i="addr"></span></p>
     <a class="btn btn-l full" target="_blank" rel="noopener" href="https://maps.google.com/?q=ZaidiLab+Tanger+Avenue+Moulay+Ali+Chrif+278">🗺️ <span data-i="map"></span></a>
-    <p style="margin:12px 0 0;font-size:12px">☎️ 05 39 35 60 54 · 05 39 95 91 16<br>✉️ zaidilabtanger@gmail.com · 🌐 www.zaidilab.com</p>
+    <p style="margin:12px 0 0;font-size:12px">☎️ <span class="ltr">05 39 35 60 54</span> · <span class="ltr">05 39 95 91 16</span><br>✉️ <span class="ltr">zaidilabtanger@gmail.com</span> · 🌐 <span class="ltr">www.zaidilab.com</span></p>
   </div>
   <div class="card">
     <h3>📍 <span data-i="ct_t"></span></h3>
@@ -366,6 +369,8 @@ const WA_NUM='212601501476';
 // URL de votre proxy sécurisé (Cloudflare Worker). Laissez vide = mode hors-ligne.
 const API_PROXY='';
 // URL de l'application web Google Apps Script (Google Sheets). Vide = désactivé.
+// Prix : false tant que la grille tarifaire officielle n'est pas fournie (le site public ne publie aucun prix)
+const SHOW_PRICES=false;
 const SHEETS_URL='VOTRE_URL_APPS_SCRIPT_ICI';
 
 /* ====== DATA ====== */
@@ -408,7 +413,7 @@ fr:{
  ph_name:'Ex : Fatima Benali',ph_addr:'Rue, quartier — Tanger',ph_notes:'À jeun, ordonnance, informations utiles…',
  gps:'Partager ma position GPS',gps_w:'Localisation…',gps_ok:'Position enregistrée ✔',gps_ko:'Position indisponible — réessayez',
  cartempty:'Aucune analyse sélectionnée (facultatif : précisez dans les notes).',total:'Total estimé',
- f_send:'Envoyer la demande',f_zone:'Zone de déplacement',z1:'Tanger centre · +50 MAD',z2:'Périphérie / hors centre · +100 MAD',fee:'Frais de déplacement',ok_t:'Demande envoyée ✅',ok_s:'Le laboratoire vous rappelle très vite pour confirmer.',ok_wa:'Aussi sur WhatsApp',ok_call:'Appeler le labo',ok_mail:'Envoyer par e-mail',sent_fail:'Envoi indisponible : on ouvre WhatsApp.',f_hint:'Le laboratoire vous rappelle pour confirmer le rendez-vous.',f_err:'Remplissez : nom, téléphone, adresse et date.',
+ f_send:'Envoyer la demande',f_zone:'Zone de déplacement',z1:'Tanger centre · +50 MAD',z2:'Périphérie / hors centre · +100 MAD',fee:'Frais de déplacement',pnote:'Le prix des analyses vous est confirmé par le laboratoire au téléphone.',ok_t:'Demande envoyée ✅',ok_s:'Le laboratoire vous rappelle très vite pour confirmer.',ok_wa:'Aussi sur WhatsApp',ok_call:'Appeler le labo',ok_mail:'Envoyer par e-mail',sent_fail:'Envoi indisponible : on ouvre WhatsApp.',f_hint:'Le laboratoire vous rappelle pour confirmer le rendez-vous.',f_err:'Remplissez : nom, téléphone, adresse et date.',
  gt:'Guide avant votre analyse',gs:'Comment bien vous préparer, simplement.',
  g:[
   ['🥣','Faut-il être à jeun ?','Pour la glycémie et le bilan lipidique, venez à jeun depuis 8 à 12 heures (l’eau est autorisée). Évitez l’alcool la veille. La NFS, la CRP et la plupart des sérologies ne demandent pas de jeûne.'],
@@ -424,7 +429,7 @@ fr:{
  chips:['Dois-je être à jeun ?','Comment faire l’ECBU ?','Horaires','Prélèvement à domicile'],
  adisc:'Information générale, ne remplace pas l’avis d’un médecin. Je n’interprète pas les résultats.',
  think:'…',a_off:'(Mode hors-ligne)',
- kb:{hours:'Nous sommes ouverts du lundi au vendredi de 7h30 à 21h, et le week-end de 8h à 18h.',home:'Nous faisons le prélèvement à domicile 7j/7. Allez dans l’onglet « Domicile » et envoyez votre demande sur WhatsApp.',price:'Les prix sont dans l’onglet « Analyses ». Vous pouvez aussi appeler le laboratoire au 06 01 50 14 76.',results:'Pour vos résultats, écrivez-nous sur WhatsApp avec votre nom et votre date de naissance.',def:'Je n’ai pas bien compris. Essayez : « jeûne », « urine », « spermogramme », « horaires », « domicile » — ou contactez le laboratoire sur WhatsApp.'},
+ kb:{hours:'Nous sommes ouverts du lundi au vendredi de 7h30 à 21h, et le week-end de 8h à 18h.',home:'Nous faisons le prélèvement à domicile 7j/7. Allez dans l’onglet « Domicile » et envoyez votre demande directement depuis l’application.',price:'Les tarifs sont confirmés par le laboratoire (selon les analyses et votre mutuelle). Appelez le 06 01 50 14 76 ou envoyez votre demande dans l’onglet « Domicile ». Le déplacement à domicile coûte 50 MAD (Tanger centre) à 100 MAD (périphérie).',results:'Pour vos résultats, écrivez-nous sur WhatsApp avec votre nom et votre date de naissance.',def:'Je n’ai pas bien compris. Essayez : « jeûne », « urine », « spermogramme », « horaires », « domicile » — ou contactez le laboratoire sur WhatsApp.'},
  kw:{0:['jeun','glyc','cholest','lipid'],1:['ecbu','urine'],2:['sperm'],3:['hormon','cortisol','prolactine','tsh'],4:['hcg','enceinte','grossesse'],5:['médic','medic','traitement','biotine'],hours:['horaire','ouvert','heure'],home:['domicile','déplac','chez moi'],price:['prix','tarif','coût','combien'],results:['résultat','resultat']},
  dn:['Biochimie','Hématologie','Hormonologie','Immunologie','Microbiologie','Virologie','Biologie moléculaire (PCR)','Spermologie','Biologie de la reproduction']
 },
@@ -449,7 +454,7 @@ es:{
  ph_name:'Ej: Fatima Benali',ph_addr:'Calle, barrio — Tánger',ph_notes:'En ayunas, receta, datos útiles…',
  gps:'Compartir mi ubicación GPS',gps_w:'Localizando…',gps_ok:'Ubicación guardada ✔',gps_ko:'Ubicación no disponible — reintenta',
  cartempty:'Ningún análisis seleccionado (opcional: indícalo en las notas).',total:'Total estimado',
- f_send:'Enviar solicitud',f_zone:'Zona de desplazamiento',z1:'Tánger centro · +50 MAD',z2:'Afueras / fuera del centro · +100 MAD',fee:'Gastos de desplazamiento',ok_t:'Solicitud enviada ✅',ok_s:'El laboratorio te llamará muy pronto para confirmar.',ok_wa:'También por WhatsApp',ok_call:'Llamar al laboratorio',ok_mail:'Enviar por correo',sent_fail:'Envío no disponible: abrimos WhatsApp.',f_hint:'El laboratorio te llamará para confirmar la cita.',f_err:'Rellena: nombre, teléfono, dirección y fecha.',
+ f_send:'Enviar solicitud',f_zone:'Zona de desplazamiento',z1:'Tánger centro · +50 MAD',z2:'Afueras / fuera del centro · +100 MAD',fee:'Gastos de desplazamiento',pnote:'El laboratorio te confirma por teléfono el precio de los análisis.',ok_t:'Solicitud enviada ✅',ok_s:'El laboratorio te llamará muy pronto para confirmar.',ok_wa:'También por WhatsApp',ok_call:'Llamar al laboratorio',ok_mail:'Enviar por correo',sent_fail:'Envío no disponible: abrimos WhatsApp.',f_hint:'El laboratorio te llamará para confirmar la cita.',f_err:'Rellena: nombre, teléfono, dirección y fecha.',
  gt:'Guía antes de tu análisis',gs:'Cómo prepararte bien, de forma sencilla.',
  g:[
   ['🥣','¿Hay que ir en ayunas?','Para la glucemia y el perfil lipídico ven en ayunas de 8 a 12 horas (se puede beber agua). Evita el alcohol la víspera. El hemograma, la PCR y la mayoría de serologías no requieren ayuno.'],
@@ -465,7 +470,7 @@ es:{
  chips:['¿Hay que ir en ayunas?','¿Cómo recoger la orina?','Horario','Toma a domicilio'],
  adisc:'Información general; no sustituye al médico. No interpreto resultados.',
  think:'…',a_off:'(Modo sin conexión)',
- kb:{hours:'Abrimos de lunes a viernes de 7:30 a 21:00 y el fin de semana de 8:00 a 18:00.',home:'Hacemos la toma a domicilio los 7 días. Ve a la pestaña «Domicilio» y envía tu solicitud por WhatsApp.',price:'Los precios están en la pestaña «Análisis». También puedes llamar al 06 01 50 14 76.',results:'Para tus resultados escríbenos por WhatsApp con tu nombre y fecha de nacimiento.',def:'No te he entendido bien. Prueba: «ayuno», «orina», «espermiograma», «horario», «domicilio» — o contacta al laboratorio por WhatsApp.'},
+ kb:{hours:'Abrimos de lunes a viernes de 7:30 a 21:00 y el fin de semana de 8:00 a 18:00.',home:'Hacemos la toma a domicilio los 7 días. Ve a la pestaña «Domicilio» y envía tu solicitud directamente desde la aplicación.',price:'Los precios los confirma el laboratorio (según los análisis y tu mutua). Llama al 06 01 50 14 76 o envía tu solicitud en «Domicilio». El desplazamiento a domicilio cuesta 50 MAD (centro de Tánger) a 100 MAD (afueras).',results:'Para tus resultados escríbenos por WhatsApp con tu nombre y fecha de nacimiento.',def:'No te he entendido bien. Prueba: «ayuno», «orina», «espermiograma», «horario», «domicilio» — o contacta al laboratorio por WhatsApp.'},
  kw:{0:['ayun','gluc','colest','lip'],1:['orina','urocult','ecbu'],2:['esperm'],3:['hormon','cortisol','prolact','tsh'],4:['hcg','embaraz'],5:['medic','trat','biotin'],hours:['horari','abiert','hora'],home:['domicil','casa'],price:['precio','tarifa','cuant','cuánto','coste'],results:['resultad']},
  dn:['Bioquímica','Hematología','Hormonas','Inmunología','Microbiología','Virología','Biología molecular (PCR)','Espermiograma','Biología de la reproducción']
 },
@@ -490,7 +495,7 @@ ar:{
  ph_name:'مثال: فاطمة بنعلي',ph_addr:'الشارع، الحي — طنجة',ph_notes:'صائم، وصفة طبية، معلومات مفيدة…',
  gps:'مشاركة موقعي GPS',gps_w:'جاري التحديد…',gps_ok:'تم حفظ الموقع ✔',gps_ko:'الموقع غير متاح — أعيدوا المحاولة',
  cartempty:'لم يتم اختيار أي تحليل (اختياري: اذكروه في الملاحظات).',total:'المجموع التقديري',
- f_send:'إرسال الطلب',f_zone:'منطقة التنقل',z1:'وسط طنجة · +50 درهم',z2:'الضواحي / خارج الوسط · +100 درهم',fee:'مصاريف التنقل',ok_t:'تم إرسال الطلب ✅',ok_s:'سيتصل بكم المختبر قريبا للتأكيد.',ok_wa:'أيضا عبر واتساب',ok_call:'اتصلوا بالمختبر',ok_mail:'إرسال بالبريد',sent_fail:'الإرسال غير متاح: سنفتح واتساب.',f_hint:'سيتصل بكم المختبر لتأكيد الموعد.',f_err:'املؤوا: الاسم والهاتف والعنوان والتاريخ.',
+ f_send:'إرسال الطلب',f_zone:'منطقة التنقل',z1:'وسط طنجة · \u2066+50\u2069 درهم',z2:'الضواحي / خارج الوسط · \u2066+100\u2069 درهم',fee:'مصاريف التنقل',pnote:'سيؤكد لكم المختبر ثمن التحاليل عبر الهاتف.',ok_t:'تم إرسال الطلب ✅',ok_s:'سيتصل بكم المختبر قريبا للتأكيد.',ok_wa:'أيضا عبر واتساب',ok_call:'اتصلوا بالمختبر',ok_mail:'إرسال بالبريد',sent_fail:'الإرسال غير متاح: سنفتح واتساب.',f_hint:'سيتصل بكم المختبر لتأكيد الموعد.',f_err:'املؤوا: الاسم والهاتف والعنوان والتاريخ.',
  gt:'دليل ما قبل التحليل',gs:'كيف تستعدون بشكل صحيح وبسهولة.',
  g:[
   ['🥣','هل يجب أن أكون صائما؟','بالنسبة لسكر الدم وتحليل الدهون يُرجى الحضور صائما من 8 إلى 12 ساعة (يُسمح بالماء). تجنبوا الكحول في اليوم السابق. تحليل تعداد الدم وCRP ومعظم المصليات لا تتطلب صياما.'],
@@ -506,7 +511,7 @@ ar:{
  chips:['هل يجب أن أكون صائما؟','كيف أجمع البول؟','أوقات العمل','أخذ العينة في المنزل'],
  adisc:'معلومات عامة ولا تغني عن استشارة الطبيب. لا أفسر النتائج.',
  think:'…',a_off:'(وضع بدون اتصال)',
- kb:{hours:'نفتح من الاثنين إلى الجمعة من 7:30 إلى 21:00، وفي عطلة نهاية الأسبوع من 8:00 إلى 18:00.',home:'نقوم بأخذ العينات في المنزل طوال أيام الأسبوع. افتحوا تبويب «المنزل» وأرسلوا طلبكم عبر واتساب.',price:'الأسعار في تبويب «التحاليل». يمكنكم أيضا الاتصال بالمختبر على 06 01 50 14 76.',results:'لنتائجكم راسلونا عبر واتساب مع الاسم وتاريخ الازدياد.',def:'لم أفهم جيدا. جربوا: «صيام»، «بول»، «المني»، «أوقات العمل»، «المنزل» — أو تواصلوا مع المختبر عبر واتساب.'},
+ kb:{hours:'نفتح من الاثنين إلى الجمعة من 7:30 إلى 21:00، وفي عطلة نهاية الأسبوع من 8:00 إلى 18:00.',home:'نقوم بأخذ العينات في المنزل طوال أيام الأسبوع. افتحوا تبويب «المنزل» وأرسلوا طلبكم عبر واتساب.',price:'يؤكد المختبر الأسعار حسب التحاليل والتغطية الصحية. اتصلوا على \u206606 01 50 14 76\u2069 أو أرسلوا طلبكم من تبويب «المنزل». مصاريف التنقل من \u206650\u2069 إلى \u2066100\u2069 درهم.',results:'لنتائجكم راسلونا عبر واتساب مع الاسم وتاريخ الازدياد.',def:'لم أفهم جيدا. جربوا: «صيام»، «بول»، «المني»، «أوقات العمل»، «المنزل» — أو تواصلوا مع المختبر عبر واتساب.'},
  kw:{0:['صائم','صيام','سكر','كوليسترول','دهون'],1:['بول','ecbu'],2:['مني','حيوانات'],3:['هرمون','كورتيزول','برولاكتين','tsh'],4:['حمل','hcg'],5:['دواء','أدوية','علاج','بيوتين'],hours:['وقت','أوقات','مفتوح','ساعة'],home:['منزل','بيت','المنزل'],price:['ثمن','سعر','أسعار','كم'],results:['نتيجة','نتائج']},
  dn:['الكيمياء الحيوية','أمراض الدم','الهرمونات','المناعة','الأحياء الدقيقة','علم الفيروسات','البيولوجيا الجزيئية (PCR)','تحليل المني','بيولوجيا التكاثر']
 }};
@@ -546,7 +551,7 @@ function updatePill(p){
   p=p||document.querySelector('.page.on').id.slice(2);
   const n=cart.size,tot=[...cart].reduce((s,i)=>s+A[i][2],0);
   $('pill').classList.toggle('on',n>0&&(p==='tests'));
-  if(n>0)$('pill-t').textContent=T().pill(n,tot);
+  if(n>0)$('pill-t').textContent=SHOW_PRICES?T().pill(n,tot):T().pill(n,tot).replace(/ · .*$/,'');
 }
 
 /* ====== HOME ====== */
@@ -570,21 +575,21 @@ function setCat(x){cat=x;renderCats();renderTests()}
 function renderTests(){
   const q=($('q').value||'').toLowerCase().trim();
   const items=A.map((a,i)=>[a,i]).filter(([a])=>(cat==='all'||a[1]===cat)&&(a[0].toLowerCase().includes(q)||T().cats[a[1]].toLowerCase().includes(q)));
-  $('list').innerHTML=items.length?items.map(([a,i])=>`<div class="test ${cart.has(i)?'sel':''}"><div class="ic">${CAT[a[1]]}</div><div class="in"><b>${a[0]}${a[3]?' ⭐':''}</b><small>${T().cats[a[1]]}</small></div><span class="price">${a[2]} MAD</span><button class="add" onclick="tog(${i})">${cart.has(i)?'✓':'+'}</button></div>`).join(''):`<p class="s" style="text-align:center;padding:30px">${T().none}</p>`;
+  $('list').innerHTML=items.length?items.map(([a,i])=>`<div class="test ${cart.has(i)?'sel':''}"><div class="ic">${CAT[a[1]]}</div><div class="in"><b>${a[0]}${a[3]?' ⭐':''}</b><small>${T().cats[a[1]]}</small></div>${SHOW_PRICES?`<span class="price">${a[2]} MAD</span>`:''}<button class="add" onclick="tog(${i})">${cart.has(i)?'✓':'+'}</button></div>`).join(''):`<p class="s" style="text-align:center;padding:30px">${T().none}</p>`;
 }
 function tog(i){cart.has(i)?cart.delete(i):cart.add(i);saveCart();renderTests();renderCart();updatePill()}
 
 /* ====== REQUEST ====== */
 function renderSlots(){
   const S=['07:30 – 09:30','09:30 – 11:30','11:30 – 13:30','14:00 – 16:00','16:00 – 18:00'];
-  $('slots').innerHTML=S.map(s=>`<button class="slot ${s===slot?'on':''}" onclick="setSlot('${s}')">${s}</button>`).join('');
+  $('slots').innerHTML=S.map(s=>`<button class="slot ${s===slot?'on':''}" onclick="setSlot('${s}')"><span class="ltr">${s}</span></button>`).join('');
 }
 function setSlot(s){slot=slot===s?'':s;renderSlots()}
 function feeV(){const z=$('f-zone');return z?+z.value:50}
 function renderCart(){
   const ids=[...cart];
   const sub=ids.reduce((s,i)=>s+A[i][2],0),fee=feeV(),tot=sub+fee;
-  $('cartbox').innerHTML=(ids.length?ids.map(i=>`<div class="mini"><span>${A[i][0]} · <b>${A[i][2]} MAD</b></span><button onclick="tog(${i})">✕</button></div>`).join(''):`<p class="s" style="margin:0 0 8px">${T().cartempty}</p>`)+`<div class="mini"><span>${T().fee}</span><b>${fee} MAD</b></div><div class="tot"><span>${T().total}</span><span>${tot} MAD</span></div>`;
+  $('cartbox').innerHTML=(ids.length?ids.map(i=>`<div class="mini"><span>${A[i][0]}${SHOW_PRICES?` · <b>${A[i][2]} MAD</b>`:''}</span><button onclick="tog(${i})">✕</button></div>`).join(''):`<p class="s" style="margin:0 0 8px">${T().cartempty}</p>`)+`${SHOW_PRICES?`<div class="mini"><span>${T().fee}</span><b class="ltr">${fee} MAD</b></div>`:''}<div class="tot"><span>${SHOW_PRICES?T().total:T().fee}</span><span class="ltr">${SHOW_PRICES?tot:fee} MAD</span></div>${SHOW_PRICES?'':`<p class="s" style="margin:6px 0 0;font-size:12px">${T().pnote}</p>`}`;
 }
 function getGPS(){
   if(!navigator.geolocation){$('gps-t').textContent=T().gps_ko;return}
@@ -597,15 +602,15 @@ function getGPS(){
 function openExt(u){try{const w=window.open(u,'_blank');if(!w)location.href=u}catch(e){location.href=u}}
 function wa(text){openExt('https://wa.me/'+WA_NUM+(text?'?text='+encodeURIComponent(text):''))}
 async function sendReq(){
-  const n=$('f-name').value.trim(),p=$('f-phone').value.trim(),a=$('f-addr').value.trim(),d=$('f-date').value;
+  const n=$('f-name').value.trim(),p=$('f-phone').value.trim().replace(/[\u0660-\u0669]/g,c=>c.charCodeAt(0)-0x660).replace(/[\u06F0-\u06F9]/g,c=>c.charCodeAt(0)-0x6F0),a=$('f-addr').value.trim(),d=$('f-date').value;
   const m=$('rmsg');
-  if(!n||!p||!a||!d){m.textContent=T().f_err;m.className='msg err';return}
+  if(!n||!p||!a||!d||p.replace(/\D/g,'').length<9){m.textContent=T().f_err;m.className='msg err';return}
   m.className='msg';
   const ids=[...cart],sub=ids.reduce((s,i)=>s+A[i][2],0),fee=feeV(),tot=sub+fee,notes=$('f-notes').value.trim();
   const msg=`Bonjour ZaidiLab 👋\n\n*Demande de prélèvement à domicile*\n👤 ${n}\n📞 ${p}\n🏠 ${a}\n📅 ${d}${slot?' · '+slot:''}`
    +(gpsLink?`\n📍 ${gpsLink}`:'')
    +(ids.length?`\n\n🔬 Analyses :\n${ids.map(i=>'• '+A[i][0]).join('\n')}`:'')
-   +`\n🚗 Déplacement : ${fee} MAD\n💰 Total estimé : ${tot} MAD`
+   +`\n🚗 Déplacement : ${fee} MAD`+(SHOW_PRICES?`\n💰 Total estimé : ${tot} MAD`:'')
    +(notes?`\n\n📝 ${notes}`:'')+`\n\n(Langue du patient : ${lang.toUpperCase()})`;
   if(!SHEETS_URL.startsWith('https://')){m.textContent=T().sent_fail;m.className='msg err';wa(msg);return}
   const btn=$('sendbtn');btn.disabled=true;
