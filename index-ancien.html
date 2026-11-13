@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#06335f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ZaidiLab">
+<meta name="description" content="Centre d'Analyses Médicales à Tanger — Prélèvement à domicile 7j/7, tarifs, localisation.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ZaidiLab — Analyses Médicales Tanger</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--navy:#06335f;--blue:#004d9b;--sky:#2f8ae0;--gold:#c8a94a;--bg:#f6f8fc;--white:#fff;--text:#16213a;--muted:#6b7a90;--border:#e6eaf2;--success:#166534;--success-bg:#dcfce7;--danger:#dc2626;--danger-bg:#fee2e2;--r-lg:22px;--r-md:16px;--r-sm:12px;--shadow:0 10px 28px rgba(6,51,95,0.08)}
+html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column}
+header{order:1;background:linear-gradient(135deg,#06335f 0%,#004d9b 55%,#2f8ae0 100%);flex-shrink:0;position:relative;overflow:hidden;border-radius:0 0 28px 28px;box-shadow:0 12px 24px rgba(6,51,95,0.18)}
+.hbg{position:absolute;top:-50px;right:-50px;width:190px;height:190px;border-radius:50%;background:rgba(200,169,74,0.14);pointer-events:none}
+.hbg2{position:absolute;bottom:-60px;left:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none}
+.hi{position:relative;z-index:2;display:flex;align-items:center;gap:13px;padding:18px 16px 11px}
+.logo{width:52px;height:52px;object-fit:cover;border-radius:16px;background:#fff;padding:0;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.22);border:2px solid rgba(255,255,255,0.7)}
+.htxt h1{font-size:16.5px;font-weight:700;color:#fff;line-height:1.25;letter-spacing:.2px}
+.htxt p{font-size:10px;color:rgba(255,255,255,0.68);letter-spacing:.6px;text-transform:uppercase;margin-top:2px;font-weight:500}
+.hbadges{position:relative;z-index:2;display:flex;gap:6px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none}
+.hbadges::-webkit-scrollbar{display:none}
+.hb{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.14);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.22);color:rgba(255,255,255,0.92);font-size:10.5px;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;font-weight:500}
+.hb i{font-size:11px;color:#e3c878}
+nav{order:3;background:var(--white);display:flex;flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;box-shadow:0 -8px 22px rgba(6,51,95,0.08);gap:4px}
+nav::-webkit-scrollbar{display:none}
+.nb{flex:1;min-width:60px;padding:8px 3px;border:none;background:transparent;border-radius:14px;color:var(--muted);font-size:9.5px;letter-spacing:.3px;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;font-weight:600;transition:background .18s,color .18s,transform .12s}
+.nb i{font-size:19px;transition:transform .18s}
+.nb:active{transform:scale(.93)}
+.nb.active{color:var(--navy);background:#eef4ff}
+.nb.active i{transform:translateY(-1px)}
+.content{order:2;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.page{display:none;padding:15px 13px 24px}
+.page.active{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ptitle{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:3px;letter-spacing:-.2px}
+.psub{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.fl{display:block;font-size:10.5px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.fi{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;color:var(--text);background:#f8fafd;margin-bottom:11px;font-family:inherit;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
+.fi:focus{outline:none;border-color:var(--sky);background:#fff;box-shadow:0 0 0 4px rgba(47,138,224,0.12)}
+.fs{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;color:var(--text);background:#f8fafd;margin-bottom:11px;font-family:inherit;transition:border-color .15s}
+textarea.fi{resize:none;min-height:65px}
+.geo-box{border:1.5px solid var(--border);border-radius:var(--r-sm);background:#f8fafd;overflow:hidden;margin-bottom:11px}
+.gbtn{width:100%;padding:10px 13px;background:transparent;border:none;font-size:13px;color:var(--navy);cursor:pointer;display:flex;align-items:center;gap:7px;font-weight:600;font-family:inherit}
+.gbtn i{font-size:16px;color:var(--sky)}
+.gst{padding:0 13px 10px;font-size:11px;color:var(--muted);display:none}
+.gst.show{display:block}
+.pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--sky);animation:pulse 1s infinite;margin-right:3px}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+
+/* ===== ANALYSES SELECTOR ===== */
+.analyses-section{margin-bottom:10px}
+.analyses-search{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;background:#f8fafd;font-family:inherit;margin-bottom:9px;-webkit-appearance:none;transition:border-color .15s}
+.analyses-search:focus{outline:none;border-color:var(--sky)}
+.cat-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:11px;scrollbar-width:none;padding-bottom:2px}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:11px;font-weight:500;cursor:pointer;color:var(--muted);white-space:nowrap;font-family:inherit;flex-shrink:0;-webkit-appearance:none;transition:background .15s,color .15s,border-color .15s}
+.cat-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.analyses-grid{display:flex;flex-direction:column;gap:0;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border);max-height:280px;overflow-y:auto}
+.analyse-btn{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--white);border:none;border-bottom:1px solid var(--border);cursor:pointer;font-family:inherit;text-align:left;width:100%;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.analyse-btn:last-child{border-bottom:none}
+.analyse-btn.selected{background:#eef4ff}
+.analyse-btn:active{background:#f0f4fb}
+.ab-left{flex:1;text-align:left}
+.ab-name{font-size:13px;font-weight:500;color:var(--text);line-height:1.3}
+.ab-cat{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.ab-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ab-price{font-size:12px;color:var(--muted);font-weight:500}
+.ab-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.analyse-btn.selected .ab-check{background:var(--navy);border-color:var(--navy);transform:scale(1.08)}
+.ab-check i{font-size:13px;color:#fff;display:none}
+.analyse-btn.selected .ab-check i{display:block}
+.selected-count{font-size:12px;color:var(--navy);font-weight:600;margin-bottom:9px;padding:8px 12px;background:#eef4ff;border-radius:var(--r-sm);border:1px solid #c7d2fe;display:none}
+.selected-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.sel-tag{display:flex;align-items:center;gap:4px;background:var(--navy);color:#fff;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer}
+.sel-tag i{font-size:12px}
+
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;margin-bottom:9px;transition:transform .12s,box-shadow .15s,opacity .15s;letter-spacing:.1px}
+.btn:active{transform:scale(.97);opacity:.92}
+.bn{background:var(--navy);color:#fff;box-shadow:0 8px 18px rgba(6,51,95,0.22)}
+.bwa{background:#25D366;color:#fff;box-shadow:0 8px 18px rgba(37,211,102,0.22)}
+.bsky{background:var(--sky);color:#fff;box-shadow:0 8px 18px rgba(47,138,224,0.22)}
+.msg{display:none;border-radius:var(--r-sm);padding:12px;text-align:center;font-size:12.5px;margin-top:8px}
+.msg i{font-size:19px;display:block;margin-bottom:3px}
+.mok{background:var(--success-bg);border:1px solid #bbf7d0;color:var(--success)}
+.merr{background:var(--danger-bg);border:1px solid #fecaca;color:var(--danger)}
+.brow{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.badge{display:flex;align-items:center;gap:5px;background:rgba(26,58,107,0.06);border:1px solid rgba(26,58,107,0.13);color:var(--navy);padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600}
+.badge i{font-size:12px;color:#c8a94a}
+.psrch{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:13.5px;background:var(--white);color:var(--text);margin-bottom:11px;font-family:inherit;transition:border-color .15s}
+.psrch:focus{outline:none;border-color:var(--sky)}
+.cats{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none;padding-bottom:2px}
+.cats::-webkit-scrollbar{display:none}
+.catb{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:11px;font-weight:500;cursor:pointer;color:var(--muted);white-space:nowrap;font-family:inherit;flex-shrink:0;transition:background .15s,color .15s,border-color .15s}
+.catb.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.alist{border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border)}
+.ai{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--white);border-bottom:1px solid var(--border);gap:8px}
+.ai:last-child{border-bottom:none}
+.an{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;line-height:1.3}
+.ac{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.pt{background:var(--navy);color:#fff;padding:4px 10px;border-radius:9px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.pt.gold{background:#c8a94a;color:#06335f}
+.mapw{width:100%;height:220px;border-radius:var(--r-md);border:1px solid var(--border);overflow:hidden;margin-bottom:12px}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.ic{background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;box-shadow:var(--shadow)}
+.ic i{font-size:18px;color:var(--sky);margin-bottom:6px;display:block}
+.ic h3{font-size:11.5px;font-weight:600;color:var(--navy);margin-bottom:3px}
+.ic p,.ic a{font-size:11px;color:var(--muted);line-height:1.5;text-decoration:none;display:block}
+.ic a{color:var(--sky)}
+.nores{text-align:center;padding:24px;color:var(--muted);font-size:13px;background:var(--white)}
+.faq-item{border-bottom:1px solid var(--border);padding:12px 0}
+.faq-item:last-child{border-bottom:none}
+.faq-item summary{font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';font-size:16px;color:var(--sky);margin-left:8px}
+.faq-item[open] summary::after{content:'–'}
+.faq-item p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:7px}
+.fast-badge{display:inline-flex;align-items:center;gap:2px;background:#fff7e6;color:#9a6b00;border:1px solid #f3ddac;font-size:9.5px;font-weight:600;padding:1px 6px;border-radius:20px;vertical-align:middle;margin-left:4px}
+.fast-badge i{font-size:10px}
+.rx-box{border:1.5px dashed var(--border);border-radius:var(--r-sm);background:#f8fafd;margin-bottom:7px;overflow:hidden}
+.rx-pick{display:flex;align-items:center;gap:8px;padding:13px;cursor:pointer;font-size:13px;color:var(--navy);font-weight:600}
+.rx-pick i{font-size:18px;color:var(--sky)}
+.rx-box img{display:block;width:100%;max-height:160px;object-fit:cover}
+.rx-note{font-size:10.5px;color:var(--muted);line-height:1.4;margin-bottom:11px}
+.track-status{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);padding:13px 15px;margin-bottom:11px;font-size:13px;font-weight:700;color:var(--navy);box-shadow:var(--shadow)}
+.dot-live{width:10px;height:10px;border-radius:50%;background:#2fb86e;flex-shrink:0;animation:zlpulse 1.4s infinite}
+@keyframes zlpulse{0%{box-shadow:0 0 0 0 rgba(47,184,110,.5)}70%{box-shadow:0 0 0 9px rgba(47,184,110,0)}100%{box-shadow:0 0 0 0 rgba(47,184,110,0)}}
+.track-time{margin-left:auto;font-size:11px;font-weight:400;color:var(--muted)}
+.empty{text-align:center;padding:26px;color:var(--muted);font-size:13px}
+.empty i{font-size:30px;display:block;margin-bottom:7px;color:var(--border)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbg"></div>
+  <div class="hbg2"></div>
+  <div class="hi">
+    <img class="logo" id="logo" alt="ZaidiLab" src="logo.png">
+    <div class="htxt">
+      <h1>ZaidiLab · زايدي لاب</h1>
+      <p>Analyses Médicales · Tanger</p>
+    </div>
+  </div>
+  <div class="hbadges">
+    <span class="hb"><i class="ti ti-home-check"></i>À domicile</span>
+    <span class="hb"><i class="ti ti-clock"></i>7j/7</span>
+    <span class="hb"><i class="ti ti-phone"></i>+212 601 501 476</span>
+    <span class="hb"><i class="ti ti-world"></i>zaidilab.com</span>
+  </div>
+</header>
+
+<nav>
+  <button class="nb active" onclick="showPage('home')" id="nav-home"><i class="ti ti-flask"></i>Domicile</button>
+  <button class="nb" onclick="showPage('prices')" id="nav-prices"><i class="ti ti-tag"></i>Tarifs</button>
+  <button class="nb" onclick="showPage('location')" id="nav-location"><i class="ti ti-map-pin"></i>Labo</button>
+  <button class="nb" onclick="showPage('track')" id="nav-track"><i class="ti ti-navigation"></i>Suivi</button>
+</nav>
+
+<div class="content">
+
+<!-- DOMICILE -->
+<div class="page active" id="page-home">
+  <p class="ptitle">Prélèvement à domicile</p>
+  <p class="psub">Remplissez le formulaire — rappel dans 30 minutes.</p>
+  <div class="card">
+    <label class="fl">Prénom & Nom *</label>
+    <input class="fi" type="text" id="f-name" placeholder="Ex: Fatima Benali">
+    <label class="fl">Téléphone *</label>
+    <input class="fi" type="tel" id="f-phone" placeholder="+212 6XX XXX XXX">
+    <label class="fl">Adresse complète *</label>
+    <input class="fi" type="text" id="f-address" placeholder="Rue, quartier — Tanger">
+    <label class="fl">Position GPS (optionnel)</label>
+    <div class="geo-box">
+      <button class="gbtn" onclick="getGPS()" type="button">
+        <i class="ti ti-map-pin" id="gico"></i>
+        <span id="gtxt">Partager ma position GPS</span>
+      </button>
+      <div class="gst" id="gst"></div>
+    </div>
+    <label class="fl">Date souhaitée *</label>
+    <input class="fi" type="date" id="f-date">
+    <label class="fl">Heure préférée</label>
+    <select class="fs" id="f-time">
+      <option value="">Choisir un créneau...</option>
+      <option>07:00 – 09:00</option>
+      <option>09:00 – 11:00</option>
+      <option>11:00 – 13:00</option>
+      <option>14:00 – 16:00</option>
+      <option>16:00 – 18:00</option>
+      <option>18:00 – 20:00</option>
+    </select>
+
+    <!-- ANALYSES SELECTOR -->
+    <label class="fl">Analyses souhaitées</label>
+    <div class="analyses-section">
+      <div class="selected-count" id="sel-count">0 analyse sélectionnée</div>
+      <div class="selected-tags" id="sel-tags"></div>
+      <input class="analyses-search" type="text" placeholder="🔍 Rechercher une analyse..." oninput="filterAnalyses(this.value)" id="a-search">
+      <div class="cat-tabs" id="cat-tabs">
+        <button class="cat-tab active" onclick="filterCatA(this,'all')">Toutes</button>
+        <button class="cat-tab" onclick="filterCatA(this,'Biochimie')">Biochimie</button>
+        <button class="cat-tab" onclick="filterCatA(this,'Hématologie')">Hématologie</button>
+        <button class="cat-tab" onclick="filterCatA(this,'Bactériologie')">Bactériologie</button>
+        <button class="cat-tab" onclick="filterCatA(this,'Hormonologie')">Hormonologie</button>
+        <button class="cat-tab" onclick="filterCatA(this,'Sérologie')">Sérologie</button>
+        <button class="cat-tab" onclick="filterCatA(this,'Spermologie')">Spermologie</button>
+      </div>
+      <div class="analyses-grid" id="analyses-grid"></div>
+    </div>
+
+    <label class="fl">Photo de l'ordonnance (optionnel)</label>
+    <div class="rx-box" id="rx-box">
+      <label class="rx-pick" for="f-prescription">
+        <i class="ti ti-camera"></i>
+        <span id="rx-label">Prendre une photo ou choisir un fichier</span>
+      </label>
+      <input type="file" id="f-prescription" accept="image/*" capture="environment" onchange="onRxSelected(this)" style="display:none">
+      <img id="rx-preview" style="display:none">
+    </div>
+    <p class="rx-note">⚠️ WhatsApp n'autorise pas l'envoi automatique de photo depuis un lien : après avoir cliqué sur un bouton ci-dessous, joignez la photo vous-même dans la conversation WhatsApp qui s'ouvre.</p>
+
+    <label class="fl">Notes</label>
+    <textarea class="fi" id="f-notes" placeholder="Jeûne requis, informations utiles..."></textarea>
+    <button class="btn bn" onclick="submitForm()"><i class="ti ti-send"></i>Envoyer la demande</button>
+    <button class="btn bwa" onclick="sendWA()"><i class="ti ti-brand-whatsapp"></i>Envoyer via WhatsApp</button>
+    <div class="msg mok" id="smsg"><i class="ti ti-circle-check"></i>Demande envoyée ! N'oubliez pas de joindre votre ordonnance si vous en avez une.</div>
+    <div class="msg merr" id="serr"><i class="ti ti-alert-circle"></i>Remplissez : Nom, Téléphone, Adresse et Date.</div>
+  </div>
+  <div class="brow">
+    <span class="badge"><i class="ti ti-clock"></i>Résultats 24h</span>
+    <span class="badge"><i class="ti ti-shield-check"></i>Confidentiel</span>
+    <span class="badge"><i class="ti ti-calendar-check"></i>7j/7</span>
+  </div>
+</div>
+
+<!-- TARIFS -->
+<div class="page" id="page-prices">
+  <p class="ptitle">Tarifs des analyses</p>
+  <p class="psub">Prix en dirhams (MAD) · +212 601 501 476 · <span class="fast-badge" style="margin-left:0"><i class="ti ti-clock-bolt"></i>À jeun</span> = jeûne recommandé</p>
+  <input class="psrch" type="text" id="srch" placeholder="Rechercher une analyse..." oninput="filterList()">
+  <div class="cats">
+    <button class="catb active" onclick="filterCat(this,'all')">Tout</button>
+    <button class="catb" onclick="filterCat(this,'Biochimie')">Biochimie</button>
+    <button class="catb" onclick="filterCat(this,'Hématologie')">Hématologie</button>
+    <button class="catb" onclick="filterCat(this,'Bactériologie')">Bactériologie</button>
+    <button class="catb" onclick="filterCat(this,'Hormonologie')">Hormonologie</button>
+    <button class="catb" onclick="filterCat(this,'Sérologie')">Sérologie</button>
+    <button class="catb" onclick="filterCat(this,'Spermologie')">Spermologie</button>
+  </div>
+  <div class="alist" id="alist"></div>
+</div>
+
+<!-- LABO -->
+<div class="page" id="page-location">
+  <p class="ptitle">Nous trouver</p>
+  <p class="psub">Avenue Moulay Ali Chrif N°278, Tanger</p>
+  <div class="mapw">
+    <iframe src="https://www.google.com/maps?q=Avenue+Moulay+Ali+Chrif+N%C2%B0278,+Tanger,+Maroc&output=embed" width="100%" height="220" style="border:0;display:block" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+  <div class="igrid">
+    <div class="ic"><i class="ti ti-map-pin"></i><h3>Adresse</h3><p>Avenue Moulay Ali Chrif N°278<br>Tanger, Maroc</p><a href="https://maps.google.com/?q=Avenue+Moulay+Ali+Chrif+N°278,+Tanger,+Maroc" target="_blank">Google Maps</a></div>
+    <div class="ic"><i class="ti ti-clock"></i><h3>Horaires</h3><p>Lun–Ven 7h30–21h<br>Sam–Dim 8h–18h</p></div>
+    <div class="ic"><i class="ti ti-phone"></i><h3>Téléphones</h3><a href="tel:+212601501476">+212 601 501 476</a><a href="tel:+212539959116">+212 539 959 116</a></div>
+    <div class="ic"><i class="ti ti-world"></i><h3>Web</h3><a href="https://www.zaidilab.com" target="_blank">www.zaidilab.com</a><a href="mailto:zaidilabtanger@gmail.com" style="font-size:10px">Email</a></div>
+    <div class="ic"><i class="ti ti-stethoscope"></i><h3>Direction médicale</h3><p>Dr. Adil Zaidi<br>Médecin Biologiste</p></div>
+  </div>
+  <button class="btn bn" onclick="window.location.href='tel:+212601501476'"><i class="ti ti-phone"></i>Appeler ZaidiLab</button>
+  <button class="btn bwa" onclick="window.open('https://wa.me/212601501476','_blank')"><i class="ti ti-brand-whatsapp"></i>WhatsApp ZaidiLab</button>
+  <button class="btn bsky" onclick="window.open('https://www.zaidilab.com','_blank')"><i class="ti ti-world"></i>www.zaidilab.com</button>
+  <p class="ptitle" style="margin-top:18px;font-size:14px">Questions fréquentes</p>
+  <div class="card" style="padding:4px 14px">
+    <details class="faq-item">
+      <summary>Comment reçoit-on ses résultats ?</summary>
+      <p>Vos résultats vous sont transmis par WhatsApp et par email. Vous pouvez aussi venir les retirer directement au laboratoire.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Le prélèvement à domicile a-t-il un coût supplémentaire ?</summary>
+      <p>Cela dépend de votre quartier à Tanger. Contactez-nous par téléphone ou WhatsApp pour connaître le tarif exact selon votre adresse.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Dois-je être à jeun pour mon analyse ?</summary>
+      <p>Pour la plupart des bilans sanguins (glycémie, bilan lipidique...), un jeûne de 8 à 12h est recommandé, sauf indication contraire de votre médecin. En cas de doute, demandez-nous lors de la prise de rendez-vous.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Proposez-vous un service d'urgence 24h/24 ?</summary>
+      <p>Non, ZaidiLab fonctionne selon ses horaires d'ouverture (Lun–Ven 7h30–21h, Sam–Dim 8h–18h). En dehors de ces horaires, votre demande sera traitée dès la réouverture.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Comment réserver un prélèvement à domicile ?</summary>
+      <p>Remplissez le formulaire dans l'onglet « Domicile » et envoyez votre demande : nous vous rappelons sous 30 minutes pendant nos horaires d'ouverture.</p>
+    </details>
+  </div>
+  <p style="text-align:center;margin-top:12px"><a href="politique-confidentialite.html" style="font-size:11px;color:var(--muted);text-decoration:underline" target="_blank">Politique de confidentialité</a></p>
+</div>
+
+<!-- SUIVI EN DIRECT -->
+<div class="page" id="page-track">
+  <p class="ptitle">Suivi du préleveur</p>
+  <p class="psub">Position en direct pendant votre prélèvement à domicile.</p>
+  <div class="card" id="track-idle">
+    <div style="text-align:center;padding:18px 6px">
+      <i class="ti ti-navigation-off" style="font-size:34px;color:var(--border)"></i>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5">Aucun suivi en direct actif pour le moment.<br>Le suivi s'affiche automatiquement dès que le préleveur démarre sa tournée vers chez vous.</p>
+    </div>
+  </div>
+  <div id="track-live" style="display:none">
+    <div class="track-status">
+      <span class="dot-live"></span>
+      <span id="track-text">Préleveur en route</span>
+      <span class="track-time" id="track-time"></span>
+    </div>
+    <div class="mapw" id="track-mapwrap">
+      <div id="track-map" style="width:100%;height:100%"></div>
+    </div>
+  </div>
+  <button class="btn bwa" style="margin-top:14px" onclick="window.open('https://wa.me/212601501476','_blank')"><i class="ti ti-brand-whatsapp"></i>Contacter ZaidiLab</button>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+
+const analyses=[
+  {name:'Glycémie à jeun',cat:'Biochimie',price:40,fast:true},
+  {name:'HbA1c (hémoglobine glyquée)',cat:'Biochimie',price:134},
+  {name:'Créatinine',cat:'Biochimie',price:40},
+  {name:'Urée',cat:'Biochimie',price:40},
+  {name:'Acide urique',cat:'Biochimie',price:40},
+  {name:'Bilan lipidique complet',cat:'Biochimie',price:228,fast:true},
+  {name:'Cholestérol total',cat:'Biochimie',price:40,fast:true},
+  {name:'Triglycérides',cat:'Biochimie',price:80,fast:true},
+  {name:'ALAT / ASAT',cat:'Biochimie',price:134},
+  {name:'GGT',cat:'Biochimie',price:67},
+  {name:'Bilirubine totale',cat:'Biochimie',price:94},
+  {name:'Protéines totales',cat:'Biochimie',price:40},
+  {name:'Ferritine',cat:'Biochimie',price:335},
+  {name:'Fer sérique',cat:'Biochimie',price:80},
+  {name:'Calcium / Phosphore',cat:'Biochimie',price:94},
+  {name:'Magnésium',cat:'Biochimie',price:80},
+  {name:'NFS',cat:'Hématologie',price:80},
+  {name:'VS',cat:'Hématologie',price:40},
+  {name:'Plaquettes',cat:'Hématologie',price:50},
+  {name:'TP / TCA',cat:'Hématologie',price:100},
+  {name:'Groupe sanguin ABO Rh',cat:'Hématologie',price:60},
+  {name:'ECBU',cat:'Bactériologie',price:121},
+  {name:'Coproculture',cat:'Bactériologie',price:134},
+  {name:'Hémoculture',cat:'Bactériologie',price:147},
+  {name:'Antibiogramme',cat:'Bactériologie',price:80},
+  {name:'Examen parasitologique',cat:'Bactériologie',price:54},
+  {name:'TSH ultra-sensible',cat:'Hormonologie',price:335},
+  {name:'T3 / T4 libres',cat:'Hormonologie',price:670},
+  {name:'FSH / LH',cat:'Hormonologie',price:200},
+  {name:'Progestérone',cat:'Hormonologie',price:335},
+  {name:'Testostérone',cat:'Hormonologie',price:402},
+  {name:'Prolactine',cat:'Hormonologie',price:335},
+  {name:'Beta-HCG (grossesse)',cat:'Hormonologie',price:134,hot:true},
+  {name:'PSA total',cat:'Hormonologie',price:402},
+  {name:'Cortisol',cat:'Hormonologie',price:335},
+  {name:'Insuline à jeun',cat:'Hormonologie',price:402,fast:true},
+  {name:'HIV (dépistage)',cat:'Sérologie',price:268},
+  {name:'Hépatite B (AgHBs)',cat:'Sérologie',price:161},
+  {name:'Hépatite C',cat:'Sérologie',price:402},
+  {name:'VDRL / TPHA',cat:'Sérologie',price:94},
+  {name:'Toxoplasmose IgG/IgM',cat:'Sérologie',price:335},
+  {name:'Rubéole IgG/IgM',cat:'Sérologie',price:737},
+  {name:'CRP',cat:'Sérologie',price:134},
+  {name:'Facteur rhumatoïde',cat:'Sérologie',price:67},
+  {name:'Spermogramme',cat:'Spermologie',price:134,hot:true},
+  {name:'Test migration-survie',cat:'Spermologie',price:350,hot:true},
+  {name:'ADN spermatique',cat:'Spermologie',price:450,hot:true},
+];
+
+let selectedAnalyses=new Set();
+let activeCatA='all';
+let searchA='';
+
+function renderAnalyses(){
+  const grid=document.getElementById('analyses-grid');
+  const filtered=analyses.filter(a=>{
+    const matchCat=activeCatA==='all'||a.cat===activeCatA;
+    const matchSearch=a.name.toLowerCase().includes(searchA.toLowerCase())||a.cat.toLowerCase().includes(searchA.toLowerCase());
+    return matchCat&&matchSearch;
+  });
+  if(!filtered.length){grid.innerHTML='<div class="nores">Aucune analyse trouvée.</div>';return;}
+  grid.innerHTML=filtered.map(a=>{
+    const sel=selectedAnalyses.has(a.name);
+    return`<button class="analyse-btn${sel?' selected':''}" onclick="toggleAnalyse('${a.name.replace(/'/g,"\\'")}')">
+      <div class="ab-left">
+        <div class="ab-name">${a.name}${a.fast?' <span class="fast-badge"><i class="ti ti-clock-bolt"></i>À jeun</span>':''}</div>
+        <div class="ab-cat">${a.cat}</div>
+      </div>
+      <div class="ab-right">
+        <span class="ab-price">${a.price} MAD</span>
+        <div class="ab-check"><i class="ti ti-check"></i></div>
+      </div>
+    </button>`;
+  }).join('');
+  updateSelectedDisplay();
+}
+
+function toggleAnalyse(name){
+  if(selectedAnalyses.has(name))selectedAnalyses.delete(name);
+  else selectedAnalyses.add(name);
+  renderAnalyses();
+}
+
+function updateSelectedDisplay(){
+  const count=selectedAnalyses.size;
+  const countEl=document.getElementById('sel-count');
+  const tagsEl=document.getElementById('sel-tags');
+  if(count===0){countEl.style.display='none';tagsEl.innerHTML='';return;}
+  countEl.style.display='block';
+  countEl.textContent=count+' analyse'+(count>1?'s':'')+' sélectionnée'+(count>1?'s':'');
+  tagsEl.innerHTML=[...selectedAnalyses].map(n=>`<span class="sel-tag" onclick="toggleAnalyse('${n.replace(/'/g,"\\'")}')"><i class="ti ti-x"></i>${n}</span>`).join('');
+}
+
+function filterAnalyses(val){searchA=val;renderAnalyses();}
+function filterCatA(btn,cat){
+  activeCatA=cat;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAnalyses();
+}
+
+// NAV
+function showPage(p){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  document.querySelector('.content').scrollTop=0;
+  if(p==='track') initTrack();
+}
+
+// TARIFS
+let activeSearch='',activeCat='all';
+function renderList(){
+  const el=document.getElementById('alist');
+  const f=analyses.filter(a=>(activeCat==='all'||a.cat===activeCat)&&(a.name.toLowerCase().includes(activeSearch.toLowerCase())||a.cat.toLowerCase().includes(activeSearch.toLowerCase())));
+  if(!f.length){el.innerHTML='<div class="nores">Aucune analyse trouvée.</div>';return;}
+  el.innerHTML=f.map(a=>`<div class="ai"><div><div class="an">${a.name}${a.fast?' <span class="fast-badge"><i class="ti ti-clock-bolt"></i>À jeun</span>':''}</div><div class="ac">${a.cat}</div></div><div class="pt${a.hot?' gold':''}">${a.price} MAD</div></div>`).join('');
+}
+function filterList(){activeSearch=document.getElementById('srch').value;renderList();}
+function filterCat(btn,cat){activeCat=cat;document.querySelectorAll('.catb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList();}
+
+// GPS
+let uLat=null,uLng=null,uAcc=null;
+function getGPS(){
+  const txt=document.getElementById('gtxt'),ico=document.getElementById('gico'),st=document.getElementById('gst');
+  if(!navigator.geolocation){st.innerHTML='<span style="color:var(--danger)">GPS non supporté.</span>';st.classList.add('show');return;}
+  txt.innerHTML='<span class="pulse"></span> Localisation...';st.innerHTML='Recherche GPS...';st.classList.add('show');
+  navigator.geolocation.getCurrentPosition(
+    pos=>{uLat=pos.coords.latitude.toFixed(6);uLng=pos.coords.longitude.toFixed(6);uAcc=Math.round(pos.coords.accuracy);
+      txt.innerHTML='✅ Position enregistrée !';ico.className='ti ti-map-pin-check';ico.style.color='var(--success)';
+      st.innerHTML=`<span style="color:var(--success);font-weight:500">Précision : ~${uAcc}m</span><br><a style="display:inline-flex;align-items:center;gap:4px;background:var(--sky);color:#fff;padding:4px 9px;border-radius:7px;font-size:11px;text-decoration:none;margin-top:4px" href="https://maps.google.com/?q=${uLat},${uLng}" target="_blank">Voir sur Maps</a>`;},
+    err=>{txt.innerHTML='Réessayer GPS';ico.className='ti ti-map-pin';ico.style.color='';
+      st.innerHTML=`<span style="color:var(--danger)">${{1:'Accès refusé.',2:'Indisponible.',3:'Délai dépassé.'}[err.code]||'Erreur.'}</span>`;},
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+  );
+}
+
+// Construit le message de demande à partir du formulaire
+function buildBookingMessage(){
+  const n=document.getElementById('f-name').value.trim()||'(non renseigné)';
+  const p=document.getElementById('f-phone').value.trim()||'';
+  const a=document.getElementById('f-address').value.trim()||'';
+  const d=document.getElementById('f-date').value||'';
+  const t=document.getElementById('f-time').value||'';
+  const notes=document.getElementById('f-notes').value||'';
+  const sel=[...selectedAnalyses];
+  const gps=uLat?`\n📍 GPS : https://maps.google.com/?q=${uLat},${uLng} (±${uAcc}m)`:'';
+  const analysesText=sel.length>0?'\n\n🔬 Analyses :\n'+sel.map(s=>'• '+s).join('\n'):'';
+  const rxNote=document.getElementById('f-prescription').files.length>0?'\n\n📎 Ordonnance : je l\'envoie juste après ce message.':'';
+  return `Bonjour ZaidiLab 👋\n\nPrélèvement à domicile :\n👤 ${n}\n📞 ${p}\n🏠 ${a}\n📅 ${d}${t?' · '+t:''}${gps}${analysesText}${notes?'\n\n📝 '+notes:''}${rxNote}\n\nMerci !`;
+}
+
+function onRxSelected(input){
+  const file=input.files[0];
+  if(!file)return;
+  document.getElementById('rx-label').textContent=file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.getElementById('rx-preview');
+    img.src=e.target.result;
+    img.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// SUBMIT — envoie réellement la demande via WhatsApp (seul canal garanti sans serveur).
+// Avant, ce bouton affichait juste "Demande reçue" sans rien envoyer : corrigé.
+function submitForm(){
+  const n=document.getElementById('f-name').value.trim(),p=document.getElementById('f-phone').value.trim(),a=document.getElementById('f-address').value.trim(),d=document.getElementById('f-date').value;
+  if(!n||!p||!a||!d){document.getElementById('serr').style.display='block';setTimeout(()=>document.getElementById('serr').style.display='none',3000);return;}
+  window.open('https://wa.me/212601501476?text='+encodeURIComponent(buildBookingMessage()),'_blank');
+  document.getElementById('smsg').style.display='block';setTimeout(()=>document.getElementById('smsg').style.display='none',5000);
+}
+
+function sendWA(){
+  window.open('https://wa.me/212601501476?text='+encodeURIComponent(buildBookingMessage()),'_blank');
+}
+
+function fmtD(d){if(!d)return '';const[y,m,day]=d.split('-');return `${day}/${m}/${y}`;}
+
+// SUIVI EN DIRECT DU PRÉLEVEUR
+let trackApp,trackDb,trackMap,trackMarker,trackInited=false,trackTimer=null;
+function initTrack(){
+  if(trackInited) return;
+  trackInited = true;
+  try{
+    trackApp = firebase.initializeApp(firebaseConfig, 'patientApp');
+    trackDb = firebase.database(trackApp);
+  }catch(e){
+    console.warn('Firebase non configuré :', e);
+    return;
+  }
+  trackDb.ref('live/preleveur').on('value', snap => {
+    const d = snap.val();
+    const isStale = !d || !d.updatedAt || (Date.now() - d.updatedAt) > 120000; // > 2 min sans mise à jour
+    if(!d || !d.active || isStale){
+      document.getElementById('track-idle').style.display='block';
+      document.getElementById('track-live').style.display='none';
+      if(trackTimer){clearInterval(trackTimer);trackTimer=null;}
+      return;
+    }
+    document.getElementById('track-idle').style.display='none';
+    document.getElementById('track-live').style.display='block';
+
+    if(!trackMap){
+      trackMap = L.map('track-map').setView([d.lat, d.lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(trackMap);
+      const icon = L.divIcon({
+        html: '<div style="background:#06335f;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>',
+        className: '', iconSize: [16,16]
+      });
+      trackMarker = L.marker([d.lat, d.lng], {icon}).addTo(trackMap);
+    } else {
+      trackMarker.setLatLng([d.lat, d.lng]);
+      trackMap.panTo([d.lat, d.lng]);
+      setTimeout(()=>trackMap.invalidateSize(), 50);
+    }
+
+    const updateTimeText = () => {
+      const secs = Math.floor((Date.now() - d.updatedAt)/1000);
+      document.getElementById('track-time').textContent = secs < 10 ? 'à l\'instant' : 'il y a ' + secs + 's';
+    };
+    updateTimeText();
+    if(trackTimer) clearInterval(trackTimer);
+    trackTimer = setInterval(updateTimeText, 3000);
+  });
+}
+
+renderAnalyses();
+renderList();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
