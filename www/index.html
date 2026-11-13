@@ -284,8 +284,6 @@ html[dir=rtl] input[type=tel]{text-align:right}
     <input class="fi" id="f-date" type="date">
     <label class="fl2" data-i="f_time"></label>
     <div class="slots" id="slots"></div>
-    <label class="fl2" data-i="f_zone"></label>
-    <select class="fi" id="f-zone" onchange="renderCart()"><option value="50" data-i="z1"></option><option value="100" data-i="z2"></option></select>
     <label class="fl2" data-i="f_tests"></label>
     <div id="cartbox" style="margin-bottom:6px"></div>
     <button class="btn btn-l full" style="margin-bottom:12px" onclick="go('tests')">➕ <span data-i="f_add"></span></button>
@@ -370,25 +368,139 @@ const WA_NUM='212601501476';
 const API_PROXY='';
 // URL de l'application web Google Apps Script (Google Sheets). Vide = désactivé.
 // Prix : false tant que la grille tarifaire officielle n'est pas fournie (le site public ne publie aucun prix)
-const SHOW_PRICES=false;
+const SHOW_PRICES=true; // tarif non conventionné (liste fournie par le laboratoire)
+const FEE=50; // service à domicile, ajouté automatiquement
+const fm=v=>(Math.round(v*100)/100).toFixed(2).replace(/\.00$/,'').replace('.',',');
 const SHEETS_URL='VOTRE_URL_APPS_SCRIPT_ICI';
 
 /* ====== DATA ====== */
 // [nom, catégorie, prix, vedette]
 const A=[
-['Glycémie à jeun','bio',40],['HbA1c','bio',120],['Créatinine','bio',50],['Urée','bio',40],['Acide urique','bio',50],
-['Bilan lipidique complet','bio',150],['Cholestérol total','bio',50],['Triglycérides','bio',60],['ALAT / ASAT','bio',80],
-['GGT','bio',60],['Bilirubine totale','bio',60],['Protéines totales','bio',50],['Ferritine','bio',150],['Fer sérique','bio',80],
-['Calcium / Phosphore','bio',80],['Magnésium','bio',70],
-['NFS','hem',80],['VS','hem',40],['Plaquettes','hem',50],['TP / TCA','hem',100],['Groupe sanguin ABO Rh','hem',60],
-['ECBU','bac',120],['Coproculture','bac',120],['Hémoculture','bac',200],['Antibiogramme','bac',80],['Examen parasitologique','bac',100],
-['TSH ultra-sensible','hor',150],['T3 / T4 libres','hor',200],['FSH / LH','hor',200],['Progestérone','hor',150],['Testostérone','hor',150],
-['Prolactine','hor',150],['Beta-HCG (grossesse)','hor',120,1],['PSA total','hor',150],['Cortisol','hor',150],['Insuline à jeun','hor',160],
-['HIV (dépistage)','ser',100],['Hépatite B (AgHBs)','ser',100],['Hépatite C','ser',120],['VDRL / TPHA','ser',100],
-['Toxoplasmose IgG/IgM','ser',160],['Rubéole IgG/IgM','ser',160],['CRP','ser',80],['Facteur rhumatoïde','ser',100],
-['Spermogramme','spe',280,1],['Test migration-survie','spe',350,1],['ADN spermatique','spe',450,1]
+["Acide urique", "bio", 40.2],
+["Albumine", "bio", 80.4],
+["Bilirubine (Totale + Directe + Indirecte)", "bio", 93.8],
+["Calcium", "bio", 40.2],
+["Chlore", "bio", 40.2],
+["Cholestérol total", "bio", 40.2],
+["HDL", "bio", 67.0],
+["LDL", "bio", 67.0],
+["Créatinine", "bio", 40.2],
+["Fer", "bio", 80.4],
+["Fer + CTF", "bio", 134.0],
+["Ferritine", "bio", 302.5, 1],
+["Glycémie", "bio", 40.2, 1],
+["Hémoglobine glyquée", "bio", 134.0, 1],
+["Ionogramme complet (Na, K, Cl, Protéines totales, Réserve alcaline, Calcium)", "bio", 214.4],
+["Magnésium", "bio", 80.4],
+["Phosphore", "bio", 53.6],
+["Protéines totales", "bio", 40.2],
+["Potassium", "bio", 40.2],
+["Reserve alcaline", "bio", 53.6],
+["Sodium", "bio", 40.2],
+["Triglycérides", "bio", 80.4],
+["Urée", "bio", 40.2],
+["Débit de filtration glomérulaire (MDRD)", "bio", 60.5],
+["Microalbuminurie de 24H", "bio", 145.2],
+["Rapport Microalbuminurie/créatinurie", "bio", 181.5],
+["Vitamine D", "bio", 544.5, 1],
+["Hyperglycémie provoquée par voie orale (HGPO)", "bio", 181.5],
+["Gamma-Glutamyl transférase", "bio", 67.0],
+["LDH", "bio", 67.0],
+["Transaminases (ASAT)", "bio", 67.0],
+["Transaminases (ALAT)", "bio", 67.0],
+["Lipase", "bio", 134.0],
+["Beta HCG quantitatif", "hor", 302.5, 1],
+["Beta HCG qualitatif", "hor", 121.0],
+["Œstradiol", "hor", 302.5],
+["Cortisol", "hor", 302.5],
+["Cortisol libre urinaire", "hor", 363.0],
+["Insuline", "hor", 363.0],
+["LH", "hor", 302.5],
+["FSH", "hor", 302.5],
+["AMH", "hor", 605.0],
+["Progestérone", "hor", 302.5],
+["Prolactine", "hor", 302.5],
+["T4 libre", "hor", 242.0],
+["Testostérone", "hor", 363.0],
+["Testostérone libre", "hor", 363.0],
+["TSH", "hor", 302.5, 1],
+["T3 Libre", "hor", 363.0],
+["PTH intacte", "hor", 484.0],
+["Numération formule sanguine", "hem", 96.8, 1],
+["Réticulocytes", "hem", 36.3],
+["Vitesse de sédimentation", "hem", 36.3],
+["Vitamine B12", "hem", 484.0],
+["Groupage ABO", "hem", 72.6],
+["Coombs direct", "hem", 72.6],
+["RAI", "hem", 48.4],
+["Fibrinogène", "hem", 48.4],
+["Taux de prothrombine (TP) / INR", "hem", 48.4],
+["Temps de saignement (TS) Ivy 3 points", "hem", 60.5],
+["Temps de céphaline activée (TCA/TCK)", "hem", 48.4],
+["D-dimères", "hem", 242.0],
+["Cytologie, culture, Identification", "bac", 108.9],
+["Antibiogramme", "bac", 72.6],
+["Examen mycologique : Recherche", "bac", 36.3],
+["Examen mycologique : Culture, identification", "bac", 72.6],
+["Parasitologie des selles (KOP)", "bac", 48.4],
+["Coproculture + identification", "bac", 121.0],
+["Recherche de sang dans les selles (méthode Immunologique)", "bac", 181.5],
+["Recherche Helicobacter pylori dans les selles", "bac", 363.0],
+["ASLO", "ser", 96.8],
+["Sérologie Helicobacter pylori", "ser", 217.8],
+["Mycoplasmes génitaux", "ser", 217.8],
+["VRDL (quantitatif)", "ser", 72.6],
+["TPHA (quantitatif)", "ser", 121.0],
+["Toxoplasmose IgG", "ser", 121.0],
+["Toxoplasmose IgM", "ser", 181.5],
+["Hépatite A IgM", "ser", 302.5],
+["Hépatite B : Antigène Hbs", "ser", 145.2],
+["Hépatite B : Anticorps anti Hbs", "ser", 302.5],
+["Hépatite B : Anticorps anti Hbc totaux", "ser", 302.5],
+["Hépatite B : ADN par PCR", "ser", 726.0],
+["Hépatite C : dépistage", "ser", 363.0],
+["Hépatite C : ARN par PCR", "ser", 1089.0],
+["Herpes virus simplex type I (IgG ou IgM)", "ser", 242.0],
+["Herpes virus simplex type II (IgG ou IgM)", "ser", 242.0],
+["Charge virale HIV", "ser", 1089.0],
+["Ac anti EBNA", "ser", 217.8],
+["Ac anti VCA IgG + IgM", "ser", 217.8],
+["Rubéole IgG", "ser", 181.5],
+["Rubéole IgM", "ser", 484.0],
+["Auto anticorps anti nucléaires", "imm", 181.5],
+["Anticorps anti thyroidiens : AC anti Thyroglobulines", "imm", 181.5],
+["IgE totales", "imm", 242.0],
+["Immunofixation des proteines", "imm", 726.0],
+["AFP (Alpha-foeto-protéine)", "imm", 302.5],
+["PSA totale", "imm", 363.0],
+["PSA libre", "imm", 363.0],
+["Marqueur tumoral Ca 125", "imm", 484.0],
+["Marqueur tumoral Ca 15-3", "imm", 484.0],
+["Marqueur tumoral 19-9", "imm", 484.0],
+["Test au latex", "imm", 60.5],
+["Réaction de Waaler Rose", "imm", 60.5],
+["CRP", "imm", 121.0, 1],
+["Transferrine", "imm", 181.5],
+["IgG totales", "imm", 181.5],
+["IgA totales", "imm", 181.5],
+["IgM totales", "imm", 181.5],
+["Spermocytogramme", "spe", 181.5],
+["Test de Huhner", "spe", 145.2],
+["Anticorps anti ECT (Ac anti Ag solubles)", "imm", 605.0],
+["Anticorps anti Cardiolipine IgG", "imm", 242.0],
+["Anticorps anti Cardiolipine IgM", "imm", 242.0],
+["Anticorps anti Beta-2-GP1 IgG", "imm", 242.0],
+["Anticorps anti Beta-2-GP1 IgM", "imm", 242.0],
+["Anticorps anti transglutaminase tissulaire IgA", "imm", 242.0],
+["Anticorps anti transglutaminase tissulaire IgG", "imm", 242.0],
+["Troponine", "bio", 335.0],
+["Enzyme de conversion de l’angiotensine (ECA)", "bio", 242.0],
+["NT Pro BNP", "bio", 605.0],
+["Procalcitonine", "bio", 484.0],
+["Pneumoallergènes", "imm", 605.0],
+["Trophoallergènes", "imm", 605.0]
 ];
-const CAT={bio:'🧪',hem:'🩸',bac:'🦠',hor:'⚖️',ser:'🛡️',spe:'🔬'};
+const CAT={bio:'🧪',hem:'🩸',hor:'⚖️',ser:'🛡️',bac:'🦠',imm:'🧬',spe:'🔬'};
 
 /* ====== TRADUCTIONS ====== */
 const TR={
@@ -406,14 +518,14 @@ fr:{
  open:'Ouvert maintenant',closed:'Fermé actuellement',until:'jusqu’à',opens:'ouvre à',
  n1:'Accueil',n2:'Analyses',n3:'Domicile',n4:'Guide',n5:'Assistant',
  tt:'Catalogue des analyses',ts:'Appuyez sur + pour ajouter une analyse à votre demande.',tsearch:'🔍 Rechercher une analyse…',all:'Toutes',
- cats:{bio:'Biochimie',hem:'Hématologie',bac:'Bactériologie',hor:'Hormonologie',ser:'Sérologie',spe:'Spermologie'},
+ cats:{bio:'Biochimie',hem:'Hématologie',bac:'Bactériologie',hor:'Hormonologie',ser:'Sérologie',imm:'Immunologie',spe:'Reproduction'},
  none:'Aucune analyse trouvée.',pill:(n,t)=>`🧪 ${n} analyse${n>1?'s':''} · ${t} MAD`,
  rt:'Prélèvement à domicile',rs:'Remplissez le formulaire, la demande arrive directement au laboratoire.',
  f_name:'Nom complet *',f_phone:'Téléphone *',f_addr:'Adresse *',f_date:'Date souhaitée *',f_time:'Créneau horaire',f_tests:'Analyses souhaitées',f_add:'Ajouter des analyses',f_notes:'Notes / ordonnance',
  ph_name:'Ex : Fatima Benali',ph_addr:'Rue, quartier — Tanger',ph_notes:'À jeun, ordonnance, informations utiles…',
  gps:'Partager ma position GPS',gps_w:'Localisation…',gps_ok:'Position enregistrée ✔',gps_ko:'Position indisponible — réessayez',
  cartempty:'Aucune analyse sélectionnée (facultatif : précisez dans les notes).',total:'Total estimé',
- f_send:'Envoyer la demande',f_zone:'Zone de déplacement',z1:'Tanger centre · +50 MAD',z2:'Périphérie / hors centre · +100 MAD',fee:'Frais de déplacement',pnote:'Le prix des analyses vous est confirmé par le laboratoire au téléphone.',ok_t:'Demande envoyée ✅',ok_s:'Le laboratoire vous rappelle très vite pour confirmer.',ok_wa:'Aussi sur WhatsApp',ok_call:'Appeler le labo',ok_mail:'Envoyer par e-mail',sent_fail:'Envoi indisponible : on ouvre WhatsApp.',f_hint:'Le laboratoire vous rappelle pour confirmer le rendez-vous.',f_err:'Remplissez : nom, téléphone, adresse et date.',
+ f_send:'Envoyer la demande',f_zone:'Zone de déplacement',z1:'Tanger centre · +50 MAD',z2:'Périphérie / hors centre · +100 MAD',fee:'Service à domicile',pnote:'Le prix des analyses vous est confirmé par le laboratoire au téléphone.',ok_t:'Demande envoyée ✅',ok_s:'Le laboratoire vous rappelle très vite pour confirmer.',ok_wa:'Aussi sur WhatsApp',ok_call:'Appeler le labo',ok_mail:'Envoyer par e-mail',sent_fail:'Envoi indisponible : on ouvre WhatsApp.',f_hint:'Le laboratoire vous rappelle pour confirmer le rendez-vous.',f_err:'Remplissez : nom, téléphone, adresse et date.',
  gt:'Guide avant votre analyse',gs:'Comment bien vous préparer, simplement.',
  g:[
   ['🥣','Faut-il être à jeun ?','Pour la glycémie et le bilan lipidique, venez à jeun depuis 8 à 12 heures (l’eau est autorisée). Évitez l’alcool la veille. La NFS, la CRP et la plupart des sérologies ne demandent pas de jeûne.'],
@@ -429,7 +541,7 @@ fr:{
  chips:['Dois-je être à jeun ?','Comment faire l’ECBU ?','Horaires','Prélèvement à domicile'],
  adisc:'Information générale, ne remplace pas l’avis d’un médecin. Je n’interprète pas les résultats.',
  think:'…',a_off:'(Mode hors-ligne)',
- kb:{hours:'Nous sommes ouverts du lundi au vendredi de 7h30 à 21h, et le week-end de 8h à 18h.',home:'Nous faisons le prélèvement à domicile 7j/7. Allez dans l’onglet « Domicile » et envoyez votre demande directement depuis l’application.',price:'Les tarifs sont confirmés par le laboratoire (selon les analyses et votre mutuelle). Appelez le 06 01 50 14 76 ou envoyez votre demande dans l’onglet « Domicile ». Le déplacement à domicile coûte 50 MAD (Tanger centre) à 100 MAD (périphérie).',results:'Pour vos résultats, écrivez-nous sur WhatsApp avec votre nom et votre date de naissance.',def:'Je n’ai pas bien compris. Essayez : « jeûne », « urine », « spermogramme », « horaires », « domicile » — ou contactez le laboratoire sur WhatsApp.'},
+ kb:{hours:'Nous sommes ouverts du lundi au vendredi de 7h30 à 21h, et le week-end de 8h à 18h.',home:'Nous faisons le prélèvement à domicile 7j/7. Allez dans l’onglet « Domicile » et envoyez votre demande directement depuis l’application.',price:'Les prix sont dans l’onglet « Analyses » (tarif non conventionné). Pour le prélèvement à domicile, 50 MAD sont ajoutés automatiquement. Avec une mutuelle conventionnée, le laboratoire vous confirme le montant.',results:'Pour vos résultats, écrivez-nous sur WhatsApp avec votre nom et votre date de naissance.',def:'Je n’ai pas bien compris. Essayez : « jeûne », « urine », « spermogramme », « horaires », « domicile » — ou contactez le laboratoire sur WhatsApp.'},
  kw:{0:['jeun','glyc','cholest','lipid'],1:['ecbu','urine'],2:['sperm'],3:['hormon','cortisol','prolactine','tsh'],4:['hcg','enceinte','grossesse'],5:['médic','medic','traitement','biotine'],hours:['horaire','ouvert','heure'],home:['domicile','déplac','chez moi'],price:['prix','tarif','coût','combien'],results:['résultat','resultat']},
  dn:['Biochimie','Hématologie','Hormonologie','Immunologie','Microbiologie','Virologie','Biologie moléculaire (PCR)','Spermologie','Biologie de la reproduction']
 },
@@ -447,14 +559,14 @@ es:{
  open:'Abierto ahora',closed:'Cerrado ahora',until:'hasta las',opens:'abre a las',
  n1:'Inicio',n2:'Análisis',n3:'Domicilio',n4:'Guía',n5:'Asistente',
  tt:'Catálogo de análisis',ts:'Pulsa + para añadir un análisis a tu solicitud.',tsearch:'🔍 Buscar un análisis…',all:'Todos',
- cats:{bio:'Bioquímica',hem:'Hematología',bac:'Bacteriología',hor:'Hormonas',ser:'Serología',spe:'Espermiograma'},
+ cats:{bio:'Bioquímica',hem:'Hematología',bac:'Bacteriología',hor:'Hormonas',ser:'Serología',imm:'Inmunología',spe:'Reproducción'},
  none:'No se encontró ningún análisis.',pill:(n,t)=>`🧪 ${n} análisis · ${t} MAD`,
  rt:'Toma de muestra a domicilio',rs:'Rellena el formulario y la solicitud llega directa al laboratorio.',
  f_name:'Nombre completo *',f_phone:'Teléfono *',f_addr:'Dirección *',f_date:'Fecha deseada *',f_time:'Franja horaria',f_tests:'Análisis deseados',f_add:'Añadir análisis',f_notes:'Notas / receta',
  ph_name:'Ej: Fatima Benali',ph_addr:'Calle, barrio — Tánger',ph_notes:'En ayunas, receta, datos útiles…',
  gps:'Compartir mi ubicación GPS',gps_w:'Localizando…',gps_ok:'Ubicación guardada ✔',gps_ko:'Ubicación no disponible — reintenta',
  cartempty:'Ningún análisis seleccionado (opcional: indícalo en las notas).',total:'Total estimado',
- f_send:'Enviar solicitud',f_zone:'Zona de desplazamiento',z1:'Tánger centro · +50 MAD',z2:'Afueras / fuera del centro · +100 MAD',fee:'Gastos de desplazamiento',pnote:'El laboratorio te confirma por teléfono el precio de los análisis.',ok_t:'Solicitud enviada ✅',ok_s:'El laboratorio te llamará muy pronto para confirmar.',ok_wa:'También por WhatsApp',ok_call:'Llamar al laboratorio',ok_mail:'Enviar por correo',sent_fail:'Envío no disponible: abrimos WhatsApp.',f_hint:'El laboratorio te llamará para confirmar la cita.',f_err:'Rellena: nombre, teléfono, dirección y fecha.',
+ f_send:'Enviar solicitud',f_zone:'Zona de desplazamiento',z1:'Tánger centro · +50 MAD',z2:'Afueras / fuera del centro · +100 MAD',fee:'Servicio a domicilio',pnote:'El laboratorio te confirma por teléfono el precio de los análisis.',ok_t:'Solicitud enviada ✅',ok_s:'El laboratorio te llamará muy pronto para confirmar.',ok_wa:'También por WhatsApp',ok_call:'Llamar al laboratorio',ok_mail:'Enviar por correo',sent_fail:'Envío no disponible: abrimos WhatsApp.',f_hint:'El laboratorio te llamará para confirmar la cita.',f_err:'Rellena: nombre, teléfono, dirección y fecha.',
  gt:'Guía antes de tu análisis',gs:'Cómo prepararte bien, de forma sencilla.',
  g:[
   ['🥣','¿Hay que ir en ayunas?','Para la glucemia y el perfil lipídico ven en ayunas de 8 a 12 horas (se puede beber agua). Evita el alcohol la víspera. El hemograma, la PCR y la mayoría de serologías no requieren ayuno.'],
@@ -470,7 +582,7 @@ es:{
  chips:['¿Hay que ir en ayunas?','¿Cómo recoger la orina?','Horario','Toma a domicilio'],
  adisc:'Información general; no sustituye al médico. No interpreto resultados.',
  think:'…',a_off:'(Modo sin conexión)',
- kb:{hours:'Abrimos de lunes a viernes de 7:30 a 21:00 y el fin de semana de 8:00 a 18:00.',home:'Hacemos la toma a domicilio los 7 días. Ve a la pestaña «Domicilio» y envía tu solicitud directamente desde la aplicación.',price:'Los precios los confirma el laboratorio (según los análisis y tu mutua). Llama al 06 01 50 14 76 o envía tu solicitud en «Domicilio». El desplazamiento a domicilio cuesta 50 MAD (centro de Tánger) a 100 MAD (afueras).',results:'Para tus resultados escríbenos por WhatsApp con tu nombre y fecha de nacimiento.',def:'No te he entendido bien. Prueba: «ayuno», «orina», «espermiograma», «horario», «domicilio» — o contacta al laboratorio por WhatsApp.'},
+ kb:{hours:'Abrimos de lunes a viernes de 7:30 a 21:00 y el fin de semana de 8:00 a 18:00.',home:'Hacemos la toma a domicilio los 7 días. Ve a la pestaña «Domicilio» y envía tu solicitud directamente desde la aplicación.',price:'Los precios están en la pestaña «Análisis» (tarifa no convencionada). Para la toma a domicilio se añaden 50 MAD automáticamente. Con mutua convencionada, el laboratorio te confirma el importe.',results:'Para tus resultados escríbenos por WhatsApp con tu nombre y fecha de nacimiento.',def:'No te he entendido bien. Prueba: «ayuno», «orina», «espermiograma», «horario», «domicilio» — o contacta al laboratorio por WhatsApp.'},
  kw:{0:['ayun','gluc','colest','lip'],1:['orina','urocult','ecbu'],2:['esperm'],3:['hormon','cortisol','prolact','tsh'],4:['hcg','embaraz'],5:['medic','trat','biotin'],hours:['horari','abiert','hora'],home:['domicil','casa'],price:['precio','tarifa','cuant','cuánto','coste'],results:['resultad']},
  dn:['Bioquímica','Hematología','Hormonas','Inmunología','Microbiología','Virología','Biología molecular (PCR)','Espermiograma','Biología de la reproducción']
 },
@@ -488,14 +600,14 @@ ar:{
  open:'مفتوح الآن',closed:'مغلق حاليا',until:'إلى غاية',opens:'يفتح على',
  n1:'الرئيسية',n2:'التحاليل',n3:'المنزل',n4:'الدليل',n5:'المساعد',
  tt:'دليل التحاليل',ts:'اضغطوا + لإضافة تحليل إلى طلبكم.',tsearch:'🔍 ابحثوا عن تحليل…',all:'الكل',
- cats:{bio:'الكيمياء الحيوية',hem:'أمراض الدم',bac:'البكتيريولوجيا',hor:'الهرمونات',ser:'المصليات',spe:'تحليل المني'},
+ cats:{bio:'الكيمياء الحيوية',hem:'أمراض الدم',bac:'البكتيريولوجيا',hor:'الهرمونات',ser:'المصليات',imm:'المناعة',spe:'الخصوبة'},
  none:'لم يتم العثور على أي تحليل.',pill:(n,t)=>`🧪 ${n} تحليل · ${t} درهم`,
  rt:'أخذ العينة في المنزل',rs:'املؤوا الاستمارة وسيصل الطلب مباشرة إلى المختبر.',
  f_name:'الاسم الكامل *',f_phone:'الهاتف *',f_addr:'العنوان *',f_date:'التاريخ المرغوب *',f_time:'الفترة الزمنية',f_tests:'التحاليل المطلوبة',f_add:'إضافة تحاليل',f_notes:'ملاحظات / وصفة طبية',
  ph_name:'مثال: فاطمة بنعلي',ph_addr:'الشارع، الحي — طنجة',ph_notes:'صائم، وصفة طبية، معلومات مفيدة…',
  gps:'مشاركة موقعي GPS',gps_w:'جاري التحديد…',gps_ok:'تم حفظ الموقع ✔',gps_ko:'الموقع غير متاح — أعيدوا المحاولة',
  cartempty:'لم يتم اختيار أي تحليل (اختياري: اذكروه في الملاحظات).',total:'المجموع التقديري',
- f_send:'إرسال الطلب',f_zone:'منطقة التنقل',z1:'وسط طنجة · \u2066+50\u2069 درهم',z2:'الضواحي / خارج الوسط · \u2066+100\u2069 درهم',fee:'مصاريف التنقل',pnote:'سيؤكد لكم المختبر ثمن التحاليل عبر الهاتف.',ok_t:'تم إرسال الطلب ✅',ok_s:'سيتصل بكم المختبر قريبا للتأكيد.',ok_wa:'أيضا عبر واتساب',ok_call:'اتصلوا بالمختبر',ok_mail:'إرسال بالبريد',sent_fail:'الإرسال غير متاح: سنفتح واتساب.',f_hint:'سيتصل بكم المختبر لتأكيد الموعد.',f_err:'املؤوا: الاسم والهاتف والعنوان والتاريخ.',
+ f_send:'إرسال الطلب',f_zone:'منطقة التنقل',z1:'وسط طنجة · \u2066+50\u2069 درهم',z2:'الضواحي / خارج الوسط · \u2066+100\u2069 درهم',fee:'خدمة أخذ العينة في المنزل',pnote:'سيؤكد لكم المختبر ثمن التحاليل عبر الهاتف.',ok_t:'تم إرسال الطلب ✅',ok_s:'سيتصل بكم المختبر قريبا للتأكيد.',ok_wa:'أيضا عبر واتساب',ok_call:'اتصلوا بالمختبر',ok_mail:'إرسال بالبريد',sent_fail:'الإرسال غير متاح: سنفتح واتساب.',f_hint:'سيتصل بكم المختبر لتأكيد الموعد.',f_err:'املؤوا: الاسم والهاتف والعنوان والتاريخ.',
  gt:'دليل ما قبل التحليل',gs:'كيف تستعدون بشكل صحيح وبسهولة.',
  g:[
   ['🥣','هل يجب أن أكون صائما؟','بالنسبة لسكر الدم وتحليل الدهون يُرجى الحضور صائما من 8 إلى 12 ساعة (يُسمح بالماء). تجنبوا الكحول في اليوم السابق. تحليل تعداد الدم وCRP ومعظم المصليات لا تتطلب صياما.'],
@@ -511,7 +623,7 @@ ar:{
  chips:['هل يجب أن أكون صائما؟','كيف أجمع البول؟','أوقات العمل','أخذ العينة في المنزل'],
  adisc:'معلومات عامة ولا تغني عن استشارة الطبيب. لا أفسر النتائج.',
  think:'…',a_off:'(وضع بدون اتصال)',
- kb:{hours:'نفتح من الاثنين إلى الجمعة من 7:30 إلى 21:00، وفي عطلة نهاية الأسبوع من 8:00 إلى 18:00.',home:'نقوم بأخذ العينات في المنزل طوال أيام الأسبوع. افتحوا تبويب «المنزل» وأرسلوا طلبكم عبر واتساب.',price:'يؤكد المختبر الأسعار حسب التحاليل والتغطية الصحية. اتصلوا على \u206606 01 50 14 76\u2069 أو أرسلوا طلبكم من تبويب «المنزل». مصاريف التنقل من \u206650\u2069 إلى \u2066100\u2069 درهم.',results:'لنتائجكم راسلونا عبر واتساب مع الاسم وتاريخ الازدياد.',def:'لم أفهم جيدا. جربوا: «صيام»، «بول»، «المني»، «أوقات العمل»، «المنزل» — أو تواصلوا مع المختبر عبر واتساب.'},
+ kb:{hours:'نفتح من الاثنين إلى الجمعة من 7:30 إلى 21:00، وفي عطلة نهاية الأسبوع من 8:00 إلى 18:00.',home:'نقوم بأخذ العينات في المنزل طوال أيام الأسبوع. افتحوا تبويب «المنزل» وأرسلوا طلبكم عبر واتساب.',price:'الأسعار في تبويب «التحاليل» (التعريفة غير المتعاقد عليها). تضاف \u206650\u2069 درهم تلقائيا لخدمة أخذ العينة في المنزل. مع التغطية الصحية المتعاقدة، يؤكد لكم المختبر المبلغ.',results:'لنتائجكم راسلونا عبر واتساب مع الاسم وتاريخ الازدياد.',def:'لم أفهم جيدا. جربوا: «صيام»، «بول»، «المني»، «أوقات العمل»، «المنزل» — أو تواصلوا مع المختبر عبر واتساب.'},
  kw:{0:['صائم','صيام','سكر','كوليسترول','دهون'],1:['بول','ecbu'],2:['مني','حيوانات'],3:['هرمون','كورتيزول','برولاكتين','tsh'],4:['حمل','hcg'],5:['دواء','أدوية','علاج','بيوتين'],hours:['وقت','أوقات','مفتوح','ساعة'],home:['منزل','بيت','المنزل'],price:['ثمن','سعر','أسعار','كم'],results:['نتيجة','نتائج']},
  dn:['الكيمياء الحيوية','أمراض الدم','الهرمونات','المناعة','الأحياء الدقيقة','علم الفيروسات','البيولوجيا الجزيئية (PCR)','تحليل المني','بيولوجيا التكاثر']
 }};
@@ -519,11 +631,11 @@ const DEM=['🧪','🩸','⚖️','🛡️','🦠','🧫','🧬','🔬','👶'];
 
 /* ====== STATE ====== */
 let lang='fr',cat='all',cart=new Set(),slot='',gpsLink='',busy=false,hist=[];
-try{lang=localStorage.getItem('zl_lang')||'fr';cart=new Set(JSON.parse(localStorage.getItem('zl_cart')||'[]'))}catch(e){}
+try{lang=localStorage.getItem('zl_lang')||'fr';cart=new Set(JSON.parse(localStorage.getItem('zl_cart2')||'[]'))}catch(e){}
 if(!TR[lang])lang='fr';
 const T=()=>TR[lang];
 const $=id=>document.getElementById(id);
-const saveCart=()=>{try{localStorage.setItem('zl_cart',JSON.stringify([...cart]))}catch(e){}};
+const saveCart=()=>{try{localStorage.setItem('zl_cart2',JSON.stringify([...cart]))}catch(e){}};
 
 /* ====== LANG ====== */
 function setLang(l){
@@ -551,7 +663,7 @@ function updatePill(p){
   p=p||document.querySelector('.page.on').id.slice(2);
   const n=cart.size,tot=[...cart].reduce((s,i)=>s+A[i][2],0);
   $('pill').classList.toggle('on',n>0&&(p==='tests'));
-  if(n>0)$('pill-t').textContent=SHOW_PRICES?T().pill(n,tot):T().pill(n,tot).replace(/ · .*$/,'');
+  if(n>0)$('pill-t').textContent=SHOW_PRICES?T().pill(n,fm(tot)):T().pill(n,fm(tot)).replace(/ · .*$/,'');
 }
 
 /* ====== HOME ====== */
@@ -575,7 +687,7 @@ function setCat(x){cat=x;renderCats();renderTests()}
 function renderTests(){
   const q=($('q').value||'').toLowerCase().trim();
   const items=A.map((a,i)=>[a,i]).filter(([a])=>(cat==='all'||a[1]===cat)&&(a[0].toLowerCase().includes(q)||T().cats[a[1]].toLowerCase().includes(q)));
-  $('list').innerHTML=items.length?items.map(([a,i])=>`<div class="test ${cart.has(i)?'sel':''}"><div class="ic">${CAT[a[1]]}</div><div class="in"><b>${a[0]}${a[3]?' ⭐':''}</b><small>${T().cats[a[1]]}</small></div>${SHOW_PRICES?`<span class="price">${a[2]} MAD</span>`:''}<button class="add" onclick="tog(${i})">${cart.has(i)?'✓':'+'}</button></div>`).join(''):`<p class="s" style="text-align:center;padding:30px">${T().none}</p>`;
+  $('list').innerHTML=items.length?items.map(([a,i])=>`<div class="test ${cart.has(i)?'sel':''}"><div class="ic">${CAT[a[1]]}</div><div class="in"><b>${a[0]}${a[3]?' ⭐':''}</b><small>${T().cats[a[1]]}</small></div>${SHOW_PRICES?`<span class="price ltr">${fm(a[2])} MAD</span>`:''}<button class="add" onclick="tog(${i})">${cart.has(i)?'✓':'+'}</button></div>`).join(''):`<p class="s" style="text-align:center;padding:30px">${T().none}</p>`;
 }
 function tog(i){cart.has(i)?cart.delete(i):cart.add(i);saveCart();renderTests();renderCart();updatePill()}
 
@@ -585,11 +697,11 @@ function renderSlots(){
   $('slots').innerHTML=S.map(s=>`<button class="slot ${s===slot?'on':''}" onclick="setSlot('${s}')"><span class="ltr">${s}</span></button>`).join('');
 }
 function setSlot(s){slot=slot===s?'':s;renderSlots()}
-function feeV(){const z=$('f-zone');return z?+z.value:50}
+function feeV(){return FEE}
 function renderCart(){
   const ids=[...cart];
   const sub=ids.reduce((s,i)=>s+A[i][2],0),fee=feeV(),tot=sub+fee;
-  $('cartbox').innerHTML=(ids.length?ids.map(i=>`<div class="mini"><span>${A[i][0]}${SHOW_PRICES?` · <b>${A[i][2]} MAD</b>`:''}</span><button onclick="tog(${i})">✕</button></div>`).join(''):`<p class="s" style="margin:0 0 8px">${T().cartempty}</p>`)+`${SHOW_PRICES?`<div class="mini"><span>${T().fee}</span><b class="ltr">${fee} MAD</b></div>`:''}<div class="tot"><span>${SHOW_PRICES?T().total:T().fee}</span><span class="ltr">${SHOW_PRICES?tot:fee} MAD</span></div>${SHOW_PRICES?'':`<p class="s" style="margin:6px 0 0;font-size:12px">${T().pnote}</p>`}`;
+  $('cartbox').innerHTML=(ids.length?ids.map(i=>`<div class="mini"><span>${A[i][0]}${SHOW_PRICES?` · <b class="ltr">${fm(A[i][2])} MAD</b>`:''}</span><button onclick="tog(${i})">✕</button></div>`).join(''):`<p class="s" style="margin:0 0 8px">${T().cartempty}</p>`)+`${SHOW_PRICES?`<div class="mini"><span>${T().fee}</span><b class="ltr">${fee} MAD</b></div>`:''}<div class="tot"><span>${SHOW_PRICES?T().total:T().fee}</span><span class="ltr">${fm(SHOW_PRICES?tot:fee)} MAD</span></div>${SHOW_PRICES?'':`<p class="s" style="margin:6px 0 0;font-size:12px">${T().pnote}</p>`}`;
 }
 function getGPS(){
   if(!navigator.geolocation){$('gps-t').textContent=T().gps_ko;return}
@@ -610,7 +722,7 @@ async function sendReq(){
   const msg=`Bonjour ZaidiLab 👋\n\n*Demande de prélèvement à domicile*\n👤 ${n}\n📞 ${p}\n🏠 ${a}\n📅 ${d}${slot?' · '+slot:''}`
    +(gpsLink?`\n📍 ${gpsLink}`:'')
    +(ids.length?`\n\n🔬 Analyses :\n${ids.map(i=>'• '+A[i][0]).join('\n')}`:'')
-   +`\n🚗 Déplacement : ${fee} MAD`+(SHOW_PRICES?`\n💰 Total estimé : ${tot} MAD`:'')
+   +`\n🚗 Déplacement : ${fee} MAD`+(SHOW_PRICES?`\n💰 Total estimé : ${fm(tot)} MAD`:'')
    +(notes?`\n\n📝 ${notes}`:'')+`\n\n(Langue du patient : ${lang.toUpperCase()})`;
   if(!SHEETS_URL.startsWith('https://')){m.textContent=T().sent_fail;m.className='msg err';wa(msg);return}
   const btn=$('sendbtn');btn.disabled=true;
